@@ -1,0 +1,169 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Checkout - Pavan Diary{% endblock %}
+
+{% block content %}
+<div class="page-header" style="background: linear-gradient(135deg, #2c5f2d, #1e4620); color: white; padding: 3rem 0; margin: -2rem -2rem 3rem -2rem; text-align: center;">
+    <h1 style="color: white;">✅ Checkout</h1>
+    <p>Complete your order - Almost there!</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Checkout Form -->
+    <div>
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Delivery Information -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <h3 style="margin: 0; color: #2c5f2d;">📍 Delivery Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Full Name <span style="color: red;">*</span></label>
+                        <input type="text" name="full_name" required value="{{ user.get_full_name }}" placeholder="Enter your full name">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number <span style="color: red;">*</span></label>
+                        <input type="tel" name="phone" required value="{{ user.phone }}" placeholder="+91 98765 43210">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Delivery Address <span style="color: red;">*</span></label>
+                        <textarea name="address" rows="4" required placeholder="House/Flat No., Street, Landmark">{{ user.address }}</textarea>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div class="form-group">
+                            <label>City <span style="color: red;">*</span></label>
+                            <input type="text" name="city" required placeholder="City" value="Shivamogga">
+                        </div>
+
+                        <div class="form-group">
+                            <label>PIN Code <span style="color: red;">*</span></label>
+                            <input type="text" name="pincode" required placeholder="577201">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Delivery Instructions (Optional)</label>
+                        <textarea name="notes" rows="2" placeholder="Any special instructions for delivery...">{{ request.POST.notes }}</textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-header">
+                    <h3 style="margin: 0; color: #2c5f2d;">💳 Payment Method</h3>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; gap: 1rem;">
+                        <label class="payment-option" style="display: flex; align-items: center; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
+                            <input type="radio" name="payment_method" value="COD" checked style="margin-right: 1rem;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: 0.25rem;">💰 Cash on Delivery</div>
+                                <div style="font-size: 0.85rem; color: #666;">Pay when you receive your order</div>
+                            </div>
+                        </label>
+
+                        <label class="payment-option" style="display: flex; align-items: center; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
+                            <input type="radio" name="payment_method" value="UPI" style="margin-right: 1rem;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: 0.25rem;">📱 UPI Payment</div>
+                                <div style="font-size: 0.85rem; color: #666;">PhonePe, Google Pay, Paytm</div>
+                            </div>
+                        </label>
+
+                        <label class="payment-option" style="display: flex; align-items: center; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
+                            <input type="radio" name="payment_method" value="Card" style="margin-right: 1rem;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: 0.25rem;">💳 Credit/Debit Card</div>
+                                <div style="font-size: 0.85rem; color: #666;">Visa, Mastercard, RuPay</div>
+                            </div>
+                        </label>
+
+                        <label class="payment-option" style="display: flex; align-items: center; padding: 1rem; border: 2px solid #e0e0e0; border-radius: 8px; cursor: pointer; transition: all 0.3s;">
+                            <input type="radio" name="payment_method" value="NetBanking" style="margin-right: 1rem;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 600; margin-bottom: 0.25rem;">🏦 Net Banking</div>
+                                <div style="font-size: 0.85rem; color: #666;">All major banks supported</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-lg btn-block">
+                🔒 Place Order
+            </button>
+        </form>
+    </div>
+
+    <!-- Order Summary -->
+    <div>
+        <div class="cart-summary">
+            <h3>Order Summary</h3>
+            
+            <div style="max-height: 300px; overflow-y: auto; margin: 1.5rem 0; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                {% for item in cart_items %}
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid #e0e0e0;">
+                    <div>
+                        <div style="font-weight: 600; font-size: 0.9rem;">{{ item.product.name }}</div>
+                        <div style="font-size: 0.85rem; color: #666;">Qty: {{ item.quantity }}</div>
+                    </div>
+                    <div style="font-weight: 600; color: #2c5f2d;">₹{{ item.subtotal }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="cart-summary-row">
+                <span>Subtotal ({{ cart_items.count }} items)</span>
+                <span>₹{{ total }}</span>
+            </div>
+            
+            <div class="cart-summary-row">
+                <span>Delivery Charges</span>
+                <span>{% if total > 500 %}FREE{% else %}₹40{% endif %}</span>
+            </div>
+            
+            <div class="cart-summary-row">
+                <span>GST (5%)</span>
+                <span>₹{{ total|floatformat:0|add:"0"|floatformat:0|mul:"0.05"|floatformat:0 }}</span>
+            </div>
+            
+            <div class="cart-summary-row total">
+                <span>Total Amount</span>
+                <span>₹{% widthratio total 1 1.05 as total_with_gst %}{% if total > 500 %}{{ total_with_gst|floatformat:0 }}{% else %}{{ total_with_gst|add:40|floatformat:0 }}{% endif %}</span>
+            </div>
+
+            <div class="alert alert-success" style="margin-top: 1.5rem; font-size: 0.9rem;">
+                ✓ Your order will be delivered in 1-2 business days
+            </div>
+
+            <div style="margin-top: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <h4 style="font-size: 0.9rem; margin-bottom: 0.75rem; color: #2c5f2d;">🔒 Safe & Secure</h4>
+                <ul style="font-size: 0.85rem; color: #666; padding-left: 1.5rem; margin: 0;">
+                    <li>100% secure payment</li>
+                    <li>Easy returns & refunds</li>
+                    <li>Quality guaranteed</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.payment-option:has(input:checked) {
+    border-color: #2c5f2d !important;
+    background: #f0f8f0;
+}
+
+.payment-option:hover {
+    border-color: #97bc62 !important;
+}
+</style>
+{% endblock %}

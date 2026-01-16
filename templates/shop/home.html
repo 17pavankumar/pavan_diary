@@ -1,0 +1,327 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+<style>
+    .hero {
+        background: linear-gradient(135deg, rgba(44, 95, 45, 0.9), rgba(30, 70, 32, 0.9)), 
+                    url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><rect fill="%2397bc62" width="1200" height="600"/><path fill="%23fff" opacity="0.1" d="M0 300 Q300 200 600 300 T1200 300 V600 H0 Z"/></svg>');
+        background-size: cover;
+        background-position: center;
+        color: white;
+        padding: 4rem 2rem;
+        border-radius: 16px;
+        margin-bottom: 3rem;
+        text-align: center;
+    }
+
+    .hero h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        animation: fadeInUp 0.8s;
+    }
+
+    .hero p {
+        font-size: 1.3rem;
+        margin-bottom: 2rem;
+        opacity: 0.95;
+        animation: fadeInUp 1s;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        animation: fadeInUp 1.2s;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .section-title {
+        text-align: center;
+        font-size: 2.5rem;
+        color: var(--primary);
+        margin-bottom: 2rem;
+        position: relative;
+        padding-bottom: 1rem;
+    }
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: var(--secondary);
+        border-radius: 2px;
+    }
+
+    .categories {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 2rem;
+        margin-bottom: 4rem;
+    }
+
+    .category-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 16px;
+        text-align: center;
+        transition: all 0.3s;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        cursor: pointer;
+        text-decoration: none;
+        color: var(--dark);
+    }
+
+    .category-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    }
+
+    .category-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .category-card h3 {
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .products-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        transition: all 0.3s;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    }
+
+    .product-image {
+        width: 100%;
+        height: 220px;
+        background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .product-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: var(--accent);
+        color: white;
+        padding: 0.3rem 0.8rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+    }
+
+    .product-badge.organic {
+        background: #27ae60;
+    }
+
+    .product-info {
+        padding: 1.5rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .product-category {
+        color: var(--secondary);
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+    }
+
+    .product-name {
+        font-size: 1.3rem;
+        color: var(--dark);
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .product-description {
+        color: var(--gray);
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+        flex-grow: 1;
+    }
+
+    .product-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid #eee;
+    }
+
+    .product-price {
+        font-size: 1.5rem;
+        color: var(--primary);
+        font-weight: bold;
+    }
+
+    .product-rating {
+        color: #f39c12;
+        font-size: 0.9rem;
+    }
+
+    .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+        margin: 4rem 0;
+    }
+
+    .feature {
+        text-align: center;
+        padding: 2rem;
+    }
+
+    .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+
+    .feature h3 {
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .hero h1 {
+            font-size: 2rem;
+        }
+
+        .hero p {
+            font-size: 1rem;
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+        }
+    }
+</style>
+
+<div class="hero">
+    <h1>🥛 Fresh Farm Dairy Products</h1>
+    <p>Premium quality dairy products delivered fresh from local farms to your doorstep</p>
+    <div class="hero-buttons">
+        <a href="{% url 'product_list' %}" class="btn">Shop Now</a>
+        <a href="#categories" class="btn btn-outline">Browse Categories</a>
+    </div>
+</div>
+
+<section id="categories">
+    <h2 class="section-title">Shop by Category</h2>
+    <div class="categories">
+        <a href="{% url 'product_list' %}?category=milk" class="category-card">
+            <div class="category-icon">🥛</div>
+            <h3>Fresh Milk</h3>
+            <p>Pure & Fresh</p>
+        </a>
+        <a href="{% url 'product_list' %}?category=cheese" class="category-card">
+            <div class="category-icon">🧀</div>
+            <h3>Cheese</h3>
+            <p>Artisan Quality</p>
+        </a>
+        <a href="{% url 'product_list' %}?category=yogurt" class="category-card">
+            <div class="category-icon">🥣</div>
+            <h3>Yogurt</h3>
+            <p>Creamy & Healthy</p>
+        </a>
+        <a href="{% url 'product_list' %}?category=butter" class="category-card">
+            <div class="category-icon">🧈</div>
+            <h3>Butter</h3>
+            <p>Farm Fresh</p>
+        </a>
+    </div>
+</section>
+
+<section>
+    <h2 class="section-title">Featured Products</h2>
+    <div class="products-grid">
+        {% for product in featured_products %}
+        <div class="product-card">
+            <div class="product-image">
+                🥛
+                {% if product.is_organic %}
+                <span class="product-badge organic">Organic</span>
+                {% endif %}
+            </div>
+            <div class="product-info">
+                <div class="product-category">{{ product.category.name }}</div>
+                <h3 class="product-name">{{ product.name }}</h3>
+                <p class="product-description">{{ product.description|truncatewords:15 }}</p>
+                <div class="product-footer">
+                    <span class="product-price">₹{{ product.price }}</span>
+                    <span class="product-rating">⭐ {{ product.rating }}</span>
+                </div>
+                <a href="{% url 'product_detail' product.pk %}" class="btn" style="margin-top: 1rem; width: 100%;">View Details</a>
+            </div>
+        </div>
+        {% empty %}
+        <p style="grid-column: 1/-1; text-align: center; color: var(--gray);">No featured products available</p>
+        {% endfor %}
+    </div>
+    <div style="text-align: center;">
+        <a href="{% url 'product_list' %}" class="btn btn-secondary">View All Products</a>
+    </div>
+</section>
+
+<section class="features">
+    <div class="feature">
+        <div class="feature-icon">🚚</div>
+        <h3>Fast Delivery</h3>
+        <p>Same day delivery for fresh products</p>
+    </div>
+    <div class="feature">
+        <div class="feature-icon">🏆</div>
+        <h3>Premium Quality</h3>
+        <p>100% quality guaranteed products</p>
+    </div>
+    <div class="feature">
+        <div class="feature-icon">🌱</div>
+        <h3>Organic Options</h3>
+        <p>Certified organic dairy products</p>
+    </div>
+    <div class="feature">
+        <div class="feature-icon">💳</div>
+        <h3>Secure Payment</h3>
+        <p>Safe and secure checkout process</p>
+    </div>
+</section>
+{% endblock %}

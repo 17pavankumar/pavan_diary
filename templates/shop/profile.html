@@ -1,0 +1,237 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}My Profile - Pavan Diary{% endblock %}
+
+{% block content %}
+<div class="page-header" style="background: linear-gradient(135deg, #2c5f2d, #1e4620); color: white; padding: 3rem 0; margin: -2rem -2rem 3rem -2rem; text-align: center;">
+    <h1 style="color: white;">👤 My Profile</h1>
+    <p>Manage your account information</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem;">
+    <!-- Sidebar -->
+    <div>
+        <div class="card">
+            <div class="card-body" style="text-align: center;">
+                <div style="width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, #2c5f2d, #97bc62); display: flex; align-items: center; justify-content: center; font-size: 3rem; margin: 0 auto 1rem; color: white;">
+                    {{ user.username|slice:":1"|upper }}
+                </div>
+                <h3 style="margin-bottom: 0.5rem;">{{ user.get_full_name|default:user.username }}</h3>
+                <p style="color: #666; font-size: 0.9rem;">{{ user.email }}</p>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 1rem;">
+            <div class="card-body">
+                <nav>
+                    <a href="#profile" class="profile-nav-link active" onclick="showTab('profile')">
+                        👤 Profile Info
+                    </a>
+                    <a href="#orders" class="profile-nav-link" onclick="showTab('orders')">
+                        📦 My Orders
+                    </a>
+                    <a href="#password" class="profile-nav-link" onclick="showTab('password')">
+                        🔒 Change Password
+                    </a>
+                    <a href="{% url 'logout' %}" class="profile-nav-link" style="color: #e74c3c;">
+                        🚪 Logout
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div>
+        <!-- Profile Tab -->
+        <div id="profile-tab" class="profile-tab active-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="margin: 0;">📝 Edit Profile</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="profile">
+
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label>First Name</label>
+                                <input type="text" name="first_name" value="{{ user.first_name }}" placeholder="First Name">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Last Name</label>
+                                <input type="text" name="last_name" value="{{ user.last_name }}" placeholder="Last Name">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" value="{{ user.username }}" disabled style="background: #f8f9fa; cursor: not-allowed;">
+                            <small style="color: #666;">Username cannot be changed</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" name="email" value="{{ user.email }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Phone Number</label>
+                            <input type="tel" name="phone" value="{{ user.phone }}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Address</label>
+                            <textarea name="address" rows="4" required>{{ user.address }}</textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-lg">💾 Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Orders Tab -->
+        <div id="orders-tab" class="profile-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="margin: 0;">📦 Recent Orders</h3>
+                </div>
+                <div class="card-body">
+                    {% if user.orders.all %}
+                        {% for order in user.orders.all|slice:":5" %}
+                        <div class="order-card" style="margin-bottom: 1.5rem;">
+                            <div class="order-header">
+                                <div>
+                                    <div class="order-number">Order #{{ order.order_number }}</div>
+                                    <div style="color: #666; font-size: 0.9rem;">{{ order.created_at|date:"F d, Y" }}</div>
+                                </div>
+                                <div>
+                                    <span class="order-status {{ order.status }}">{{ order.get_status_display }}</span>
+                                </div>
+                            </div>
+                            <div style="padding: 1rem 0; border-top: 1px solid #e0e0e0;">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span style="color: #666;">Items:</span>
+                                    <span style="font-weight: 600;">{{ order.items.count }}</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span style="color: #666;">Total:</span>
+                                    <span style="font-weight: 600; color: #2c5f2d; font-size: 1.2rem;">₹{{ order.total_amount }}</span>
+                                </div>
+                            </div>
+                            <a href="{% url 'order_detail' order.id %}" class="btn btn-outline btn-block">View Details</a>
+                        </div>
+                        {% endfor %}
+                        <a href="{% url 'order_list' %}" class="btn btn-block">View All Orders</a>
+                    {% else %}
+                        <div class="empty-state" style="padding: 2rem;">
+                            <div class="empty-state-icon">📦</div>
+                            <h3>No orders yet</h3>
+                            <p>Start shopping to see your orders here</p>
+                            <a href="{% url 'product_list' %}" class="btn">Start Shopping</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Tab -->
+        <div id="password-tab" class="profile-tab">
+            <div class="card">
+                <div class="card-header">
+                    <h3 style="margin: 0;">🔒 Change Password</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="form_type" value="password">
+
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" name="old_password" required placeholder="Enter current password">
+                        </div>
+
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" name="new_password1" required placeholder="Enter new password">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Confirm New Password</label>
+                            <input type="password" name="new_password2" required placeholder="Re-enter new password">
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>💡 Password Requirements:</strong>
+                            <ul style="margin: 0.5rem 0 0 1.5rem;">
+                                <li>At least 8 characters long</li>
+                                <li>Mix of uppercase and lowercase letters</li>
+                                <li>Include numbers and special characters</li>
+                            </ul>
+                        </div>
+
+                        <button type="submit" class="btn btn-lg">🔐 Update Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.profile-nav-link {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: #666;
+    text-decoration: none;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s;
+}
+
+.profile-nav-link:hover {
+    background: #f8f9fa;
+    color: #2c5f2d;
+}
+
+.profile-nav-link.active {
+    background: #2c5f2d;
+    color: white;
+}
+
+.profile-tab {
+    display: none;
+}
+
+.profile-tab.active-tab {
+    display: block;
+}
+</style>
+
+<script>
+function showTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.profile-tab').forEach(tab => {
+        tab.classList.remove('active-tab');
+    });
+    
+    // Remove active class from all links
+    document.querySelectorAll('.profile-nav-link').forEach(link => {
+        link.classList.remove('active');
+    });
+    
+    // Show selected tab
+    document.getElementById(tabName + '-tab').classList.add('active-tab');
+    
+    // Add active class to clicked link
+    event.target.classList.add('active');
+    
+    // Prevent default link behavior
+    event.preventDefault();
+}
+</script>
+{% endblock %}

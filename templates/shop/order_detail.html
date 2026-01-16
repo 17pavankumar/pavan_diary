@@ -1,0 +1,174 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Order #{{ order.order_number }} - Pavan Diary{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'home' %}">Home</a>
+    <span>›</span>
+    <a href="{% url 'order_list' %}">My Orders</a>
+    <span>›</span>
+    <span>Order #{{ order.order_number }}</span>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Order Details -->
+    <div>
+        <!-- Order Header -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-body">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+                    <div>
+                        <h1 style="margin-bottom: 0.5rem;">Order #{{ order.order_number }}</h1>
+                        <p style="color: #666;">Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"h:i A" }}</p>
+                    </div>
+                    <span class="order-status {{ order.status }}">{{ order.get_status_display }}</span>
+                </div>
+
+                <!-- Order Timeline -->
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">📍 Order Status</h3>
+                    <div style="position: relative;">
+                        <div style="position: absolute; left: 15px; top: 30px; bottom: 30px; width: 2px; background: #e0e0e0;"></div>
+                        
+                        <div class="timeline-item" style="position: relative; padding-left: 3rem; padding-bottom: 2rem;">
+                            <div style="position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: #27ae60; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">✓</div>
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Order Placed</div>
+                            <div style="font-size: 0.85rem; color: #666;">{{ order.created_at|date:"F d, Y h:i A" }}</div>
+                        </div>
+
+                        <div class="timeline-item" style="position: relative; padding-left: 3rem; padding-bottom: 2rem;">
+                            <div style="position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: {% if order.status != 'pending' %}#27ae60{% else %}#e0e0e0{% endif %}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{% if order.status != 'pending' %}✓{% else %}2{% endif %}</div>
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Order Confirmed</div>
+                            <div style="font-size: 0.85rem; color: #666;">{% if order.status != 'pending' %}{{ order.updated_at|date:"F d, Y h:i A" }}{% else %}Pending{% endif %}</div>
+                        </div>
+
+                        <div class="timeline-item" style="position: relative; padding-left: 3rem; padding-bottom: 2rem;">
+                            <div style="position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: {% if order.status in 'shipped,delivered' %}#27ae60{% else %}#e0e0e0{% endif %}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{% if order.status in 'shipped,delivered' %}✓{% else %}3{% endif %}</div>
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Order Shipped</div>
+                            <div style="font-size: 0.85rem; color: #666;">{% if order.status in 'shipped,delivered' %}In Transit{% else %}Not yet shipped{% endif %}</div>
+                        </div>
+
+                        <div class="timeline-item" style="position: relative; padding-left: 3rem;">
+                            <div style="position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: {% if order.status == 'delivered' %}#27ae60{% else %}#e0e0e0{% endif %}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{% if order.status == 'delivered' %}✓{% else %}4{% endif %}</div>
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Order Delivered</div>
+                            <div style="font-size: 0.85rem; color: #666;">{% if order.status == 'delivered' %}Delivered successfully{% else %}Estimated delivery in 1-2 days{% endif %}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <h3 style="margin: 0;">🛍️ Order Items ({{ order.items.count }})</h3>
+            </div>
+            <div class="card-body">
+                {% for item in order.items.all %}
+                <div style="display: flex; gap: 1.5rem; padding: 1.5rem; border-bottom: 1px solid #e0e0e0; {% if forloop.last %}border-bottom: none;{% endif %}">
+                    <div style="width: 80px; height: 80px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
+                        🥛
+                    </div>
+                    <div style="flex: 1;">
+                        <h4 style="margin-bottom: 0.5rem;">{{ item.product.name|default:"Product" }}</h4>
+                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">Quantity: {{ item.quantity }}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-weight: 600; color: #2c5f2d; font-size: 1.2rem;">₹{{ item.price }} × {{ item.quantity }}</span>
+                            <span style="font-weight: 700; color: #2c5f2d; font-size: 1.3rem;">₹{{ item.subtotal }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Shipping Address -->
+        <div class="card">
+            <div class="card-header">
+                <h3 style="margin: 0;">📍 Shipping Address</h3>
+            </div>
+            <div class="card-body">
+                <div style="line-height: 1.8;">
+                    <div style="font-weight: 600; margin-bottom: 0.5rem;">{{ order.customer.get_full_name }}</div>
+                    <div style="color: #666;">{{ order.shipping_address|linebreaksbr }}</div>
+                    <div style="color: #666; margin-top: 0.5rem;">📞 {{ order.phone }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Summary Sidebar -->
+    <div>
+        <div class="cart-summary">
+            <h3>Order Summary</h3>
+            
+            <div class="cart-summary-row">
+                <span>Subtotal</span>
+                <span>₹{{ order.total_amount }}</span>
+            </div>
+            
+            <div class="cart-summary-row">
+                <span>Delivery Charges</span>
+                <span>FREE</span>
+            </div>
+            
+            <div class="cart-summary-row">
+                <span>GST (5%)</span>
+                <span>₹{{ order.total_amount|floatformat:0|mul:"0.05"|floatformat:0 }}</span>
+            </div>
+            
+            <div class="cart-summary-row total">
+                <span>Total Amount</span>
+                <span>₹{{ order.total_amount|floatformat:0|add:"0"|mul:"1.05"|floatformat:0 }}</span>
+            </div>
+
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid #e0e0e0;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="color: #666;">Payment Method:</span>
+                    <span style="font-weight: 600;">{{ order.payment_method }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span style="color: #666;">Payment Status:</span>
+                    <span class="badge {% if order.payment_status == 'completed' %}badge-success{% else %}badge-warning{% endif %}">
+                        {{ order.payment_status|title }}
+                    </span>
+                </div>
+            </div>
+
+            {% if order.notes %}
+            <div style="margin-top: 1.5rem; padding: 1rem; background: #fff3cd; border-radius: 8px;">
+                <strong style="color: #856404;">📝 Special Instructions:</strong>
+                <p style="margin: 0.5rem 0 0; color: #856404; font-size: 0.9rem;">{{ order.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if order.status in 'pending,confirmed' %}
+        <div class="card" style="margin-top: 1rem;">
+            <div class="card-body">
+                <h4 style="margin-bottom: 1rem;">Need Help?</h4>
+                <button class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to cancel this order?')">
+                    ❌ Cancel Order
+                </button>
+                <a href="#" class="btn btn-outline btn-block" style="margin-top: 0.5rem;">
+                    💬 Contact Support
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="card" style="margin-top: 1rem;">
+            <div class="card-body">
+                <a href="{% url 'order_list' %}" class="btn btn-outline btn-block">
+                    ← Back to Orders
+                </a>
+                <a href="{% url 'product_list' %}" class="btn btn-block" style="margin-top: 0.5rem;">
+                    🛍️ Continue Shopping
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

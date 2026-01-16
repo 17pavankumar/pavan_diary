@@ -1,0 +1,304 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Sign Up - Pavan Diary{% endblock %}
+
+{% block content %}
+<style>
+    .auth-container {
+        max-width: 500px;
+        margin: 3rem auto;
+        background: white;
+        padding: 3rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-header h1 {
+        color: #2c5f2d;
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+    }
+
+    .auth-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #2c3e50;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        border-color: #2c5f2d;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(44, 95, 45, 0.1);
+    }
+
+    .password-strength {
+        margin-top: 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .strength-bar {
+        height: 4px;
+        background: #e0e0e0;
+        border-radius: 2px;
+        margin-top: 0.5rem;
+        overflow: hidden;
+    }
+
+    .strength-bar-fill {
+        height: 100%;
+        transition: all 0.3s;
+        border-radius: 2px;
+    }
+
+    .terms-checkbox {
+        display: flex;
+        align-items: start;
+        gap: 0.5rem;
+        margin: 1.5rem 0;
+    }
+
+    .terms-checkbox input {
+        margin-top: 0.25rem;
+        width: auto !important;
+    }
+
+    .terms-checkbox label {
+        font-size: 0.9rem;
+        color: #555;
+        line-height: 1.5;
+    }
+
+    .terms-checkbox a {
+        color: #2c5f2d;
+        text-decoration: none;
+    }
+
+    .terms-checkbox a:hover {
+        text-decoration: underline;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e0e0e0;
+        color: #666;
+    }
+
+    .auth-footer a {
+        color: #2c5f2d;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .auth-container {
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+    }
+</style>
+
+<div class="auth-container">
+    <div class="auth-header">
+        <div class="auth-icon">🥛</div>
+        <h1>Join Pavan Diary</h1>
+        <p style="color: #666;">Create your account and start shopping fresh dairy products</p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" style="margin-bottom: 1.5rem;">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" id="registerForm">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="first_name">First Name <span style="color: red;">*</span></label>
+                <input type="text" id="first_name" name="first_name" required 
+                       placeholder="John" value="{{ request.POST.first_name }}">
+            </div>
+
+            <div class="form-group">
+                <label for="last_name">Last Name <span style="color: red;">*</span></label>
+                <input type="text" id="last_name" name="last_name" required 
+                       placeholder="Doe" value="{{ request.POST.last_name }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="username">Username <span style="color: red;">*</span></label>
+            <input type="text" id="username" name="username" required 
+                   placeholder="johndoe" value="{{ request.POST.username }}">
+            <small style="color: #666; font-size: 0.85rem;">This will be your unique identifier</small>
+        </div>
+
+        <div class="form-group">
+            <label for="email">Email Address <span style="color: red;">*</span></label>
+            <input type="email" id="email" name="email" required 
+                   placeholder="john@example.com" value="{{ request.POST.email }}">
+        </div>
+
+        <div class="form-group">
+            <label for="phone">Phone Number <span style="color: red;">*</span></label>
+            <input type="tel" id="phone" name="phone" required 
+                   placeholder="+91 98765 43210" value="{{ request.POST.phone }}">
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password <span style="color: red;">*</span></label>
+            <input type="password" id="password" name="password" required 
+                   placeholder="Create a strong password" onkeyup="checkPasswordStrength()">
+            <div class="password-strength">
+                <div class="strength-bar">
+                    <div class="strength-bar-fill" id="strengthBar"></div>
+                </div>
+                <small id="strengthText" style="color: #666;"></small>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="password2">Confirm Password <span style="color: red;">*</span></label>
+            <input type="password" id="password2" name="password2" required 
+                   placeholder="Re-enter your password">
+        </div>
+
+        <div class="form-group">
+            <label for="address">Delivery Address <span style="color: red;">*</span></label>
+            <textarea id="address" name="address" rows="3" required 
+                      placeholder="Enter your complete delivery address">{{ request.POST.address }}</textarea>
+        </div>
+
+        <div class="terms-checkbox">
+            <input type="checkbox" id="terms" name="terms" required>
+            <label for="terms">
+                I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a> of Pavan Diary
+            </label>
+        </div>
+
+        <div class="terms-checkbox">
+            <input type="checkbox" id="newsletter" name="newsletter">
+            <label for="newsletter">
+                📧 Subscribe to our newsletter for exclusive offers and updates
+            </label>
+        </div>
+
+        <button type="submit" class="btn btn-lg btn-block">
+            🚀 Create Account
+        </button>
+    </form>
+
+    <div class="auth-footer">
+        Already have an account? <a href="{% url 'login' %}">Login</a>
+    </div>
+</div>
+
+<script>
+function checkPasswordStrength() {
+    const password = document.getElementById('password').value;
+    const strengthBar = document.getElementById('strengthBar');
+    const strengthText = document.getElementById('strengthText');
+    
+    let strength = 0;
+    let tips = [];
+    
+    if (password.length >= 8) strength += 25;
+    else tips.push('at least 8 characters');
+    
+    if (password.match(/[a-z]/) && password.match(/[A-Z]/)) strength += 25;
+    else tips.push('uppercase and lowercase letters');
+    
+    if (password.match(/[0-9]/)) strength += 25;
+    else tips.push('numbers');
+    
+    if (password.match(/[^a-zA-Z0-9]/)) strength += 25;
+    else tips.push('special characters');
+    
+    strengthBar.style.width = strength + '%';
+    
+    if (strength === 0) {
+        strengthBar.style.background = '#e0e0e0';
+        strengthText.textContent = '';
+    } else if (strength <= 25) {
+        strengthBar.style.background = '#e74c3c';
+        strengthText.textContent = '❌ Weak - Add ' + tips.join(', ');
+        strengthText.style.color = '#e74c3c';
+    } else if (strength <= 50) {
+        strengthBar.style.background = '#f39c12';
+        strengthText.textContent = '⚠️ Fair - Add ' + tips.join(', ');
+        strengthText.style.color = '#f39c12';
+    } else if (strength <= 75) {
+        strengthBar.style.background = '#3498db';
+        strengthText.textContent = '✓ Good password';
+        strengthText.style.color = '#3498db';
+    } else {
+        strengthBar.style.background = '#27ae60';
+        strengthText.textContent = '✓✓ Strong password!';
+        strengthText.style.color = '#27ae60';
+    }
+}
+
+document.getElementById('registerForm').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const password2 = document.getElementById('password2').value;
+    
+    if (password !== password2) {
+        e.preventDefault();
+        alert('❌ Passwords do not match!');
+        return false;
+    }
+    
+    if (password.length < 8) {
+        e.preventDefault();
+        alert('❌ Password must be at least 8 characters long!');
+        return false;
+    }
+});
+</script>
+{% endblock %}

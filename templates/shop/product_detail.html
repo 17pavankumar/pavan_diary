@@ -1,0 +1,624 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Pavan Diary{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'home' %}">Home</a>
+    <span>›</span>
+    <a href="{% url 'product_list' %}">Products</a>
+    <span>›</span>
+    <a href="{% url 'product_list' %}?category={{ product.category.id }}">{{ product.category.name }}</a>
+    <span>›</span>
+    <span>{{ product.name }}</span>
+</div>
+
+<div class="product-detail">
+    <div class="product-detail-image">
+        {% if product.images.first %}
+            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+        {% else %}
+            <div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); display: flex; align-items: center; justify-content: center; height: 500px; font-size: 10rem;">
+                🥛
+            </div>
+        {% endif %}
+        
+        <!-- Wishlist Button on Image -->
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'add_to_wishlist' product.pk %}" class="wishlist-form">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="wishlist">
+            <button type="submit" class="wishlist-btn {% if in_wishlist %}active{% endif %}" title="{% if in_wishlist %}Remove from Wishlist{% else %}Add to Wishlist{% endif %}">
+                <span style="font-size: 1.5rem;">{% if in_wishlist %}💔{% else %}❤️{% endif %}</span>
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="product-detail-info">
+        <div class="product-category" style="font-size: 1rem; margin-bottom: 0.5rem;">{{ product.category.name }}</div>
+        <h1>{{ product.name }}</h1>
+        
+        <div class="product-detail-meta">
+            <div>
+                {% if product.listing.on_sale and product.listing.sale_price %}
+                <div class="product-detail-price">₹{{ product.listing.sale_price }}</div>
+                <div style="color: #999; text-decoration: line-through; font-size: 1.5rem;">₹{{ product.price }}</div>
+                <div class="badge badge-danger" style="margin-top: 0.5rem;">
+                    Save ₹{{ product.price|add:"-"|add:product.listing.sale_price|floatformat:0 }}
+                </div>
+                {% else %}
+                <div class="product-detail-price">₹{{ product.price }}</div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <div style="font-size: 2rem; color: #f39c12; margin-bottom: 0.5rem;">
+                    ⭐ {{ product.rating }}
+                </div>
+                <div style="color: #666;">{{ product.reviews.count }} review{{ product.reviews.count|pluralize }}</div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+            {% if product.is_organic %}
+            <span class="badge badge-success" style="padding: 0.5rem 1rem; font-size: 0.9rem;">🌱 Organic</span>
+            {% endif %}
+            
+            {% if product.is_in_stock %}
+            <span class="badge badge-success" style="padding: 0.5rem 1rem; font-size: 0.9rem;">✓ In Stock ({{ product.stock_quantity }} available)</span>
+            {% else %}
+            <span class="badge badge-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;">✗ Out of Stock</span>
+            {% endif %}
+            
+            <span class="badge badge-info" style="padding: 0.5rem 1rem; font-size: 0.9rem;">📦 {{ product.unit }}</span>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: #2c5f2d;">Product Description</h3>
+            <p style="line-height: 1.8; color: #555;">{{ product.description }}</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem;">
+            <div style="background: #fff; padding: 1rem; border-radius: 8px; border: 2px solid #e0e0e0;">
+                <div style="color: #666; font-size: 0.9rem;">Seller</div>
+                <div style="font-weight: 600; color: #2c5f2d;">{{ product.seller.business_name }}</div>
+                <div style="font-size: 0.85rem; color: #f39c12; margin-top: 0.25rem;">⭐ {{ product.seller.rating }}</div>
+            </div>
+            <div style="background: #fff; padding: 1rem; border-radius: 8px; border: 2px solid #e0e0e0;">
+                <div style="color: #666; font-size: 0.9rem;">Shelf Life</div>
+                <div style="font-weight: 600; color: #2c5f2d;">{{ product.expiry_days }} days</div>
+            </div>
+        </div>
+
+        {% if product.is_in_stock %}
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'add_to_cart' product.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="product">
+            <div class="form-group">
+                <label>Quantity:</label>
+                <div class="quantity-selector" style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem;">
+                    <button type="button" class="btn btn-sm quantity-minus" style="width: 40px;">-</button>
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock_quantity }}" 
+                           class="quantity-input" style="width: 80px; text-align: center;">
+                    <button type="button" class="btn btn-sm quantity-plus" style="width: 40px;">+</button>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-lg btn-primary" style="flex: 2;">
+                    🛒 Add to Cart
+                </button>
+                
+                <!-- Add to Wishlist Button -->
+                <button type="button" class="btn btn-lg btn-wishlist" style="flex: 1;" onclick="document.querySelector('.wishlist-form').submit()">
+                    {% if in_wishlist %}
+                        💔 Remove from Wishlist
+                    {% else %}
+                        ❤️ Add to Wishlist
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <div class="alert alert-warning" style="margin-top: 1rem;">
+            Please <a href="{% url 'login' %}?next={{ request.path }}" style="font-weight: 600; color: #2c5f2d;">login</a> to add items to cart or wishlist
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="alert alert-warning">
+            This product is currently out of stock. Please check back later!
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Related Products -->
+{% if related_products %}
+<section style="margin-top: 4rem;">
+    <h2 class="section-title">Similar Products</h2>
+    <div class="products-grid">
+        {% for related_product in related_products %}
+        <div class="product-card">
+            <a href="{% url 'product_detail' related_product.pk %}" style="text-decoration: none; color: inherit;">
+                <div class="product-image">
+                    {% if related_product.images.first %}
+                        <img src="{{ related_product.images.first.image.url }}" alt="{{ related_product.name }}">
+                    {% else %}
+                        🥛
+                    {% endif %}
+                    {% if related_product.is_organic %}
+                    <span class="product-badge organic">Organic</span>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <div class="product-category">{{ related_product.category.name }}</div>
+                    <h3 class="product-name">{{ related_product.name }}</h3>
+                    <div class="product-footer">
+                        <span class="product-price">₹{{ related_product.price }}</span>
+                        <span class="product-rating">⭐ {{ related_product.rating }}</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Reviews Section -->
+<section style="margin-top: 4rem;">
+    <h2 class="section-title">Customer Reviews ({{ product.reviews.count }})</h2>
+    
+    {% if reviews %}
+        <div style="margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 2rem; padding: 2rem; background: #f8f9fa; border-radius: 8px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; font-weight: bold; color: #2c5f2d;">{{ product.rating }}</div>
+                    <div style="color: #f39c12; font-size: 1.5rem;">⭐⭐⭐⭐⭐</div>
+                    <div style="color: #666; margin-top: 0.5rem;">{{ product.reviews.count }} review{{ product.reviews.count|pluralize }}</div>
+                </div>
+            </div>
+        </div>
+
+        {% for review in reviews %}
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-body">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <div>
+                        <strong style="color: #2c5f2d;">{{ review.user.username }}</strong>
+                        {% if review.is_verified_purchase %}
+                        <span class="badge badge-success" style="margin-left: 0.5rem; font-size: 0.75rem;">✓ Verified Purchase</span>
+                        {% endif %}
+                    </div>
+                    <div style="color: #f39c12; font-size: 1.1rem;">
+                        {% for i in "12345"|slice:":review.rating" %}⭐{% endfor %}
+                    </div>
+                </div>
+                <p style="color: #555; line-height: 1.6;">{{ review.comment }}</p>
+                <div style="color: #999; font-size: 0.85rem; margin-top: 0.5rem;">
+                    {{ review.created_at|date:"F d, Y" }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">💬</div>
+            <h3>No reviews yet</h3>
+            <p>Be the first to review this product!</p>
+        </div>
+    {% endif %}
+</section>
+
+<style>
+/* Wishlist Button on Image */
+.wishlist-btn {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.wishlist-btn:hover {
+    transform: scale(1.15);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+.wishlist-btn.active {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+}
+
+.wishlist-btn.active span {
+    filter: brightness(0) invert(1);
+}
+
+.wishlist-btn:active {
+    transform: scale(1.05);
+}
+
+/* Wishlist Button as Action Button */
+.btn-wishlist {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.btn-wishlist:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+    background: linear-gradient(135deg, #ee5a6f 0%, #ff6b6b 100%);
+}
+
+.btn-wishlist:active {
+    transform: translateY(0);
+}
+
+/* Primary Add to Cart Button */
+.btn-primary {
+    background: linear-gradient(135deg, #2c5f2d 0%, #1e7e34 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(44, 95, 45, 0.3);
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(44, 95, 45, 0.4);
+    background: linear-gradient(135deg, #1e7e34 0%, #2c5f2d 100%);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .product-detail-info > form > div:last-child {
+        flex-direction: column;
+    }
+    
+    .btn-primary,
+    .btn-wishlist {
+        flex: 1 !important;
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Quantity Controls
+    const quantityInput = document.querySelector('.quantity-input');
+    const minusBtn = document.querySelector('.quantity-minus');
+    const plusBtn = document.querySelector('.quantity-plus');
+    
+    if (minusBtn && plusBtn && quantityInput) {
+        minusBtn.addEventListener('click', () => {
+            const value = parseInt(quantityInput.value) || 1;
+            if (value > 1) {
+                quantityInput.value = value - 1;
+            }
+        });
+        
+        plusBtn.addEventListener('click', () => {
+            const value = parseInt(quantityInput.value) || 1;
+            const max = parseInt(quantityInput.max) || 999;
+            if (value < max) {
+                quantityInput.value = value + 1;
+            }
+        });
+    }
+    
+    // Wishlist button click feedback
+    const wishlistBtn = document.querySelector('.wishlist-btn');
+    if (wishlistBtn) {
+        wishlistBtn.addEventListener('click', function(e) {
+            // Add a slight animation on click
+            this.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 150);
+        });
+    }
+});
+</script>
+{% endblock %}
+
+
+
+
+
+{% comment %} {% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }} - Pavan Diary{% endblock %}
+
+{% block content %}
+<div class="breadcrumb">
+    <a href="{% url 'home' %}">Home</a>
+    <span>›</span>
+    <a href="{% url 'product_list' %}">Products</a>
+    <span>›</span>
+    <a href="{% url 'product_list' %}?category={{ product.category.id }}">{{ product.category.name }}</a>
+    <span>›</span>
+    <span>{{ product.name }}</span>
+</div>
+
+<div class="product-detail">
+    <div class="product-detail-image">
+        {% if product.images.first %}
+            <img src="{{ product.images.first.image.url }}" alt="{{ product.name }}">
+        {% else %}
+            <div style="background: linear-gradient(135deg, #e8f5e9, #c8e6c9); display: flex; align-items: center; justify-content: center; height: 500px; font-size: 10rem;">
+                🥛
+            </div>
+        {% endif %}
+        
+        <!-- Wishlist Button on Image -->
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'add_to_wishlist' product.pk %}" style="position: absolute; top: 1rem; left: 1rem;">
+            {% csrf_token %}
+            <button type="submit" class="wishlist-btn {% if product in user.wishlist.all %}active{% endif %}" title="Add to Wishlist">
+                <span style="font-size: 1.5rem;">❤️</span>
+            </button>
+        </form>
+        {% endif %}
+    </div>
+
+    <div class="product-detail-info">
+        <div class="product-category" style="font-size: 1rem; margin-bottom: 0.5rem;">{{ product.category.name }}</div>
+        <h1>{{ product.name }}</h1>
+        
+        <div class="product-detail-meta">
+            <div>
+                {% if product.listing.on_sale and product.listing.sale_price %}
+                <div class="product-detail-price">₹{{ product.listing.sale_price }}</div>
+                <div style="color: #999; text-decoration: line-through; font-size: 1.5rem;">₹{{ product.price }}</div>
+                <div class="badge badge-danger" style="margin-top: 0.5rem;">
+                    Save ₹{{ product.price|add:"-"|add:product.listing.sale_price|floatformat:0 }}
+                </div>
+                {% else %}
+                <div class="product-detail-price">₹{{ product.price }}</div>
+                {% endif %}
+            </div>
+            
+            <div>
+                <div style="font-size: 2rem; color: #f39c12; margin-bottom: 0.5rem;">
+                    ⭐ {{ product.rating }}
+                </div>
+                <div style="color: #666;">{{ product.reviews.count }} review{{ product.reviews.count|pluralize }}</div>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+            {% if product.is_organic %}
+            <span class="badge badge-success" style="padding: 0.5rem 1rem; font-size: 0.9rem;">🌱 Organic</span>
+            {% endif %}
+            
+            {% if product.is_in_stock %}
+            <span class="badge badge-success" style="padding: 0.5rem 1rem; font-size: 0.9rem;">✓ In Stock ({{ product.stock_quantity }} available)</span>
+            {% else %}
+            <span class="badge badge-danger" style="padding: 0.5rem 1rem; font-size: 0.9rem;">✗ Out of Stock</span>
+            {% endif %}
+            
+            <span class="badge badge-info" style="padding: 0.5rem 1rem; font-size: 0.9rem;">📦 {{ product.unit }}</span>
+        </div>
+
+        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px; margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: #2c5f2d;">Product Description</h3>
+            <p style="line-height: 1.8; color: #555;">{{ product.description }}</p>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 2rem;">
+            <div style="background: #fff; padding: 1rem; border-radius: 8px; border: 2px solid #e0e0e0;">
+                <div style="color: #666; font-size: 0.9rem;">Seller</div>
+                <div style="font-weight: 600; color: #2c5f2d;">{{ product.seller.business_name }}</div>
+                <div style="font-size: 0.85rem; color: #f39c12; margin-top: 0.25rem;">⭐ {{ product.seller.rating }}</div>
+            </div>
+            <div style="background: #fff; padding: 1rem; border-radius: 8px; border: 2px solid #e0e0e0;">
+                <div style="color: #666; font-size: 0.9rem;">Shelf Life</div>
+                <div style="font-weight: 600; color: #2c5f2d;">{{ product.expiry_days }} days</div>
+            </div>
+        </div>
+
+        {% if product.is_in_stock %}
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'add_to_cart' product.pk %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Quantity:</label>
+                <div class="quantity-selector" style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem;">
+                    <button type="button" class="btn btn-sm quantity-minus" style="width: 40px;">-</button>
+                    <input type="number" name="quantity" value="1" min="1" max="{{ product.stock_quantity }}" 
+                           class="quantity-input" style="width: 80px; text-align: center;">
+                    <button type="button" class="btn btn-sm quantity-plus" style="width: 40px;">+</button>
+                </div>
+            </div>
+            
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn btn-lg" style="flex: 1;">
+                    🛒 Add to Cart
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <div class="alert alert-warning" style="margin-top: 1rem;">
+            Please <a href="{% url 'login' %}?next={{ request.path }}" style="font-weight: 600; color: #2c5f2d;">login</a> to add items to cart
+        </div>
+        {% endif %}
+        {% else %}
+        <div class="alert alert-warning">
+            This product is currently out of stock. Please check back later!
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Related Products -->
+{% if related_products %}
+<section style="margin-top: 4rem;">
+    <h2 class="section-title">Similar Products</h2>
+    <div class="products-grid">
+        {% for related_product in related_products %}
+        <div class="product-card">
+            <a href="{% url 'product_detail' related_product.pk %}" style="text-decoration: none; color: inherit;">
+                <div class="product-image">
+                    {% if related_product.images.first %}
+                        <img src="{{ related_product.images.first.image.url }}" alt="{{ related_product.name }}">
+                    {% else %}
+                        🥛
+                    {% endif %}
+                    {% if related_product.is_organic %}
+                    <span class="product-badge organic">Organic</span>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <div class="product-category">{{ related_product.category.name }}</div>
+                    <h3 class="product-name">{{ related_product.name }}</h3>
+                    <div class="product-footer">
+                        <span class="product-price">₹{{ related_product.price }}</span>
+                        <span class="product-rating">⭐ {{ related_product.rating }}</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
+<!-- Reviews Section -->
+<section style="margin-top: 4rem;">
+    <h2 class="section-title">Customer Reviews ({{ product.reviews.count }})</h2>
+    
+    {% if reviews %}
+        <div style="margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 2rem; padding: 2rem; background: #f8f9fa; border-radius: 8px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 3rem; font-weight: bold; color: #2c5f2d;">{{ product.rating }}</div>
+                    <div style="color: #f39c12; font-size: 1.5rem;">⭐⭐⭐⭐⭐</div>
+                    <div style="color: #666; margin-top: 0.5rem;">{{ product.reviews.count }} review{{ product.reviews.count|pluralize }}</div>
+                </div>
+            </div>
+        </div>
+
+        {% for review in reviews %}
+        <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-body">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                    <div>
+                        <strong style="color: #2c5f2d;">{{ review.user.username }}</strong>
+                        {% if review.is_verified_purchase %}
+                        <span class="badge badge-success" style="margin-left: 0.5rem; font-size: 0.75rem;">✓ Verified Purchase</span>
+                        {% endif %}
+                    </div>
+                    <div style="color: #f39c12; font-size: 1.1rem;">
+                        {% for i in "12345"|slice:":review.rating" %}⭐{% endfor %}
+                    </div>
+                </div>
+                <p style="color: #555; line-height: 1.6;">{{ review.comment }}</p>
+                <div style="color: #999; font-size: 0.85rem; margin-top: 0.5rem;">
+                    {{ review.created_at|date:"F d, Y" }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">💬</div>
+            <h3>No reviews yet</h3>
+            <p>Be the first to review this product!</p>
+        </div>
+    {% endif %}
+</section>
+
+<style>
+.wishlist-btn {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    background: white;
+    border: none;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.3s;
+    z-index: 10;
+}
+
+.wishlist-btn:hover {
+    transform: scale(1.1);
+    background: #ffe5e5;
+}
+
+.wishlist-btn.active {
+    background: #e74c3c;
+    color: white;
+}
+
+.wishlist-btn.active:hover {
+    background: #c0392b;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const quantityInput = document.querySelector('.quantity-input');
+    const minusBtn = document.querySelector('.quantity-minus');
+    const plusBtn = document.querySelector('.quantity-plus');
+    
+    if (minusBtn && plusBtn && quantityInput) {
+        minusBtn.addEventListener('click', () => {
+            const value = parseInt(quantityInput.value) || 1;
+            if (value > 1) {
+                quantityInput.value = value - 1;
+            }
+        });
+        
+        plusBtn.addEventListener('click', () => {
+            const value = parseInt(quantityInput.value) || 1;
+            const max = parseInt(quantityInput.max) || 999;
+            if (value < max) {
+                quantityInput.value = value + 1;
+            }
+        });
+    }
+});
+</script>
+{% endblock %} {% endcomment %}
+
+
+
+

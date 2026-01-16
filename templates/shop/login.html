@@ -1,0 +1,214 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Login - Pavan Diary{% endblock %}
+
+{% block content %}
+<style>
+    .auth-container {
+        max-width: 450px;
+        margin: 3rem auto;
+        background: white;
+        padding: 3rem;
+        border-radius: 16px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+
+    .auth-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .auth-header h1 {
+        color: #2c5f2d;
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+    }
+
+    .auth-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #2c3e50;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.3s;
+    }
+
+    .form-group input:focus {
+        border-color: #2c5f2d;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(44, 95, 45, 0.1);
+    }
+
+    .remember-forgot {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+    }
+
+    .remember-forgot label {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        margin: 0;
+        font-weight: normal;
+    }
+
+    .remember-forgot a {
+        color: #2c5f2d;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .remember-forgot a:hover {
+        text-decoration: underline;
+    }
+
+    .divider {
+        text-align: center;
+        margin: 2rem 0;
+        position: relative;
+    }
+
+    .divider::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #e0e0e0;
+    }
+
+    .divider span {
+        background: white;
+        padding: 0 1rem;
+        position: relative;
+        color: #666;
+    }
+
+    .auth-footer {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 1px solid #e0e0e0;
+        color: #666;
+    }
+
+    .auth-footer a {
+        color: #2c5f2d;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+    .auth-footer a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .auth-container {
+            margin: 2rem 1rem;
+            padding: 2rem;
+        }
+
+        .auth-header h1 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
+<div class="auth-container">
+    <div class="auth-header">
+        <div class="auth-icon">🥛</div>
+        <h1>Welcome Back!</h1>
+        <p style="color: #666;">Login to your Pavan Diary account</p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" style="margin-bottom: 1.5rem;">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        
+        <!-- Next URL for redirect after login -->
+        {% if request.GET.next %}
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
+        {% endif %}
+        
+        <div class="form-group">
+            <label for="username">Username or Email</label>
+            <input type="text" id="username" name="username" required 
+                   placeholder="Enter your username" 
+                   value="{{ request.POST.username }}"
+                   autofocus>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required 
+                   placeholder="Enter your password">
+        </div>
+
+        <div class="remember-forgot">
+            <label>
+                <input type="checkbox" name="remember" style="width: auto;">
+                Remember me
+            </label>
+            <a href="{% url 'password_reset' %}">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-lg btn-block">
+            🔐 Login
+        </button>
+    </form>
+
+    <div class="divider">
+        <span>OR</span>
+    </div>
+
+    <div style="text-align: center;">
+        <p style="color: #666; margin-bottom: 1rem;">Quick actions:</p>
+        <a href="{% url 'product_list' %}" class="btn btn-outline btn-block" style="margin-bottom: 0.5rem;">
+            🛍️ Browse Products
+        </a>
+        <a href="{% url 'home' %}" class="btn btn-outline btn-block">
+            🏠 Back to Home
+        </a>
+    </div>
+
+    <div class="auth-footer">
+        Don't have an account? <a href="{% url 'register' %}">Sign Up</a>
+    </div>
+
+    <!-- Security Notice -->
+    <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; text-align: center;">
+        <p style="font-size: 0.85rem; color: #666; margin: 0;">
+            🔒 Your information is secure and encrypted
+        </p>
+    </div>
+</div>
+{% endblock %}
