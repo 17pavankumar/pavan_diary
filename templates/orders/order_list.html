@@ -1,0 +1,183 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}My Orders - Pavan Diary{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/pages/order_list.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1><span class="header-icon">📦</span> My Orders</h1>
+    <p>Track and manage your orders</p>
+</div>
+
+{% if orders %}
+<!-- Filter Tabs -->
+<div class="filter-tabs-container">
+    <div class="filter-tabs">
+        <a href="?status=all" class="filter-badge {% if not request.GET.status or request.GET.status == 'all' %}badge-primary{% else %}badge-secondary{% endif %}">
+            All Orders ({{ orders.count }})
+        </a>
+        <a href="?status=pending" class="filter-badge {% if request.GET.status == 'pending' %}badge-warning{% else %}badge-secondary{% endif %}">
+            ⏳ Pending
+        </a>
+        <a href="?status=confirmed" class="filter-badge {% if request.GET.status == 'confirmed' %}badge-info{% else %}badge-secondary{% endif %}">
+            ✓ Confirmed
+        </a>
+        <a href="?status=shipped" class="filter-badge {% if request.GET.status == 'shipped' %}badge-primary{% else %}badge-secondary{% endif %}">
+            🚚 Shipped
+        </a>
+        <a href="?status=delivered" class="filter-badge {% if request.GET.status == 'delivered' %}badge-success{% else %}badge-secondary{% endif %}">
+            ✅ Delivered
+        </a>
+        <a href="?status=cancelled" class="filter-badge {% if request.GET.status == 'cancelled' %}badge-danger{% else %}badge-secondary{% endif %}">
+            ❌ Cancelled
+        </a>
+    </div>
+</div>
+
+<div class="orders-grid">
+    {% for order in orders %}
+    <div class="order-card">
+        <!-- Order Header -->
+        <div class="order-header">
+            <div class="header-content">
+                <div>
+                    <div class="order-number">Order #{{ order.order_number }}</div>
+                    <div class="order-date">
+                        <span>📅</span>
+                        Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"h:i A" }}
+                    </div>
+                </div>
+                <div class="header-right-section">
+                    <span class="order-status-badge order-status {{ order.status }}">
+                        {{ order.get_status_display }}
+                    </span>
+                    <div>
+                        <span class="payment-badge {% if order.payment_status == 'completed' %}badge-success{% else %}badge-warning{% endif %}">
+                            <span>💳</span>
+                            {{ order.payment_status|title }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div class="order-summary">
+            <div class="summary-stats">
+                <div class="stat-box items">
+                    <div class="stat-label">Items</div>
+                    <div class="stat-value">
+                        {{ order.items.count }} product{{ order.items.count|pluralize }}
+                    </div>
+                </div>
+                <div class="stat-box amount">
+                    <div class="stat-label">Total Amount</div>
+                    <div class="stat-value amount">₹{{ order.total_amount }}</div>
+                </div>
+                <div class="stat-box payment">
+                    <div class="stat-label">Payment Method</div>
+                    <div class="stat-value payment">
+                        {{ order.payment_method }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items Preview with Real Images -->
+            <div class="items-preview-container">
+                <h4 class="preview-title">Order Items:</h4>
+                <div class="preview-grid">
+                    {% for item in order.items.all|slice:":4" %}
+                    <div class="preview-item">
+                        <div class="preview-card">
+                            
+                            <!-- Product Image -->
+                            <div class="preview-img-container">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" 
+                                         alt="{{ item.product.name }}" 
+                                         class="preview-img">
+                                {% elif item.product.images.first %}
+                                    <img src="{{ item.product.images.first.image.url }}" 
+                                         alt="{{ item.product.name }}" 
+                                         class="preview-img">
+                                {% else %}
+                                    <div class="preview-placeholder">
+                                        📦
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Product Info -->
+                            <div class="preview-name">
+                                {{ item.product.name|default:"Product"|truncatewords:4 }}
+                            </div>
+                            <div class="preview-qty">
+                                Qty: {{ item.quantity }}
+                            </div>
+                            <div class="preview-price">
+                                ₹{{ item.subtotal }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if order.items.count > 4 %}
+                    <div class="preview-more">
+                        <div class="more-items-wrapper">
+                            <div class="more-count">
+                                +{{ order.items.count|add:"-4" }}
+                            </div>
+                            <div class="more-items-text">more item{{ order.items.count|add:"-4"|pluralize }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Actions -->
+        <div class="order-actions">
+            <a href="{% url 'order_detail' order.id %}" class="btn-view-details">
+                <span>📄</span> View Details
+            </a>
+            
+            {% if order.status == 'delivered' %}
+            <button class="btn-rate">
+                <span>⭐</span> Rate Products
+            </button>
+            {% endif %}
+            
+            {% if order.status in 'pending,confirmed' %}
+            <form method="post" action="{% url 'cancel_order' order.id %}" class="cancel-order-form" 
+                  onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                {% csrf_token %}
+                <button type="submit" class="btn-cancel">
+                    <span>❌</span> Cancel Order
+                </button>
+            </form>
+            {% endif %}
+            
+            <a href="#" class="btn-support">
+                <span>💬</span> Contact Support
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="empty-state">
+    <div class="empty-state-icon">📦</div>
+    <h2>No orders found</h2>
+    <p>You haven't placed any orders yet. Start shopping to see your orders here!</p>
+    <a href="{% url 'product_list' %}" class="btn-start-shopping">
+        <span>🛍️</span> Start Shopping
+    </a>
+</div>
+{% endif %}
+{% endblock %}

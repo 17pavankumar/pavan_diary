@@ -1,0 +1,84 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Login - Pavan Diary{% endblock %}
+
+{% block content %}
+
+
+<div class="auth-container">
+    <div class="auth-header">
+        <div class="auth-icon">Login</div>
+        <h1>Welcome Back!</h1>
+        <p style="color: #666;">Login to your Pavan Diary account</p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }}" style="margin-bottom: 1.5rem;">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="post" action="{% url 'login' %}">
+        {% csrf_token %}
+        
+        <!-- Next URL for redirect after login -->
+        {% if request.GET.next %}
+        <input type="hidden" name="next" value="{{ request.GET.next }}">
+        {% endif %}
+        
+        <div class="form-group">
+            <label for="username">Username or Email</label>
+            <input type="text" id="username" name="username" required 
+                   placeholder="Enter your username" 
+                   value="{{ request.POST.username }}"
+                   autofocus>
+        </div>
+
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required 
+                   placeholder="Enter your password">
+        </div>
+
+        <div class="remember-forgot">
+            <label>
+                <input type="checkbox" name="remember" style="width: auto;">
+                Remember me
+            </label>
+            <a href="{% url 'password_reset' %}">Forgot Password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-lg btn-block">
+             Login
+        </button>
+    </form>
+
+    <div class="divider">
+        <span>OR</span>
+    </div>
+
+    <div style="text-align: center;">
+        <p style="color: #666; margin-bottom: 1rem;">Quick actions:</p>
+        <a href="{% url 'product_list' %}" class="btn btn-outline btn-block" style="margin-bottom: 0.5rem;">
+             Browse Products
+        </a>
+        <a href="{% url 'home' %}" class="btn btn-outline btn-block">
+             Back to Home
+        </a>
+    </div>
+
+    <div class="auth-footer">
+        Don't have an account? <a href="{% url 'register' %}">Sign Up</a>
+    </div>
+
+    <!-- Security Notice -->
+    <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px; text-align: center;">
+        <p style="font-size: 0.85rem; color: #666; margin: 0;">
+             Your information is secure and encrypted
+        </p>
+    </div>
+</div>
+{% endblock %}

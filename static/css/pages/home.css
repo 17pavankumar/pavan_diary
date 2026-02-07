@@ -1,0 +1,112 @@
+/* Home Page Styles */
+
+/* Hero Section */
+.hero-content {
+    max-width: 600px;
+}
+
+.hero p {
+    color: #7F8C8D;
+}
+
+/* Services Section */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.service-card {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 2px 8px rgba(91, 155, 213, 0.08);
+}
+
+.service-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.service-title {
+    font-size: 1rem;
+    color: #2C3E50;
+    margin: 0;
+}
+
+/* Featured Products */
+.view-all-container {
+    text-align: center;
+    margin-top: 2rem;
+}
+
+.product-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    background: #F8FBFD;
+}
+
+.btn-detail {
+    margin-top: 1rem;
+}
+
+.no-products {
+    grid-column: 1/-1;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+/* About Section */
+.about-section {
+    background: white;
+    padding: 4rem 2rem;
+    border-radius: 24px;
+    box-shadow: 0 2px 8px rgba(91, 155, 213, 0.08);
+}
+
+.about-container {
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.about-title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.about-text {
+    font-size: 1.125rem;
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+}
+
+.stats-container {
+    display: flex;
+    gap: 3rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.stat-label {
+    color: var(--text-muted);
+    font-size: 0.9375rem;
+}
+
+.learn-more-container {
+    margin-top: 2rem;
+}

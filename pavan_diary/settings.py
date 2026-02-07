@@ -38,7 +38,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'shop',
+    # 'shop',  # Deprecated
+    'core',
+    'users',
+    'products',
+    'cart',
+    'orders',
 ]
 
 MIDDLEWARE = [
@@ -63,7 +68,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'shop.context_processors.cart_count',
+                'cart.context_processors.cart_count',
             ],
         },
     },
@@ -128,7 +133,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 MEDIA_URL = '/media/'
 
-AUTH_USER_MODEL = 'shop.User'
+AUTH_USER_MODEL = 'users.User'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

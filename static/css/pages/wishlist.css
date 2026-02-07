@@ -1,0 +1,94 @@
+/* Wishlist Page Styles */
+.wishlist-header {
+    background: #ffffff;
+    color: #333;
+    padding: 3rem 0;
+    margin: -2rem -2rem 3rem -2rem;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.wishlist-title {
+    color: #5B9BD5;
+}
+
+.wishlist-subtitle {
+    color: #666;
+}
+
+.wishlist-count-wrapper {
+    margin-bottom: 2rem;
+}
+
+.wishlist-count-text {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.wishlist-card-wrapper {
+    position: relative;
+}
+
+.wishlist-product-link {
+    text-decoration: none;
+    color: inherit;
+}
+
+.wishlist-remove-form {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 10;
+}
+
+.wishlist-remove-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s;
+}
+
+.wishlist-remove-btn:hover {
+    transform: scale(1.1);
+}
+
+.wishlist-heart-icon {
+    font-size: 1.3rem;
+}
+
+.wishlist-cart-form {
+    padding: 0 1.5rem 1.5rem;
+}
+
+.wishlist-out-of-stock-wrapper {
+    padding: 0 1.5rem 1.5rem;
+}
+
+.wishlist-out-of-stock-btn {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+.wishlist-actions-footer {
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e0e0e0;
+}
+
+.wishlist-action-form {
+    display: inline;
+}
+
+.wishlist-clear-form {
+    display: inline;
+    margin-left: 1rem;
+}

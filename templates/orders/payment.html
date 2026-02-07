@@ -1,0 +1,183 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Payment - Order {{ order.order_number }}{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/pages/payment.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Payment Header -->
+            <div class="text-center mb-4">
+                <h2 class="mb-2">💳 Complete Your Payment</h2>
+                <p class="text-muted">Order #{{ order.order_number }}</p>
+            </div>
+
+            <!-- Order Summary Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-shopping-cart me-2"></i>Order Summary</h5>
+                </div>
+                <div class="card-body">
+                    <!-- Order Items -->
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-3">Items ({{ order.items.count }})</h6>
+                        {% for item in order.items.all %}
+                        <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom">
+                            <div>
+                                <span class="fw-bold">{{ item.product.name }}</span>
+                                <span class="text-muted"> × {{ item.quantity }}</span>
+                            </div>
+                            <span class="fw-bold">₹{{ item.subtotal|floatformat:2 }}</span>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Shipping Address -->
+                    <div class="mb-3 pb-3 border-bottom">
+                        <h6 class="text-muted mb-2">Shipping Address</h6>
+                        <p class="mb-0">{{ order.shipping_address }}</p>
+                        <p class="mb-0 text-muted"><i class="fas fa-phone me-2"></i>{{ order.phone }}</p>
+                    </div>
+
+                    <!-- Price Breakdown -->
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Total Amount:</span>
+                            <span class="fw-bold text-primary">₹{{ order.total_amount|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method Card -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Payment Method</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Secure Payment:</strong> Your payment is processed securely through Razorpay. We accept Credit Cards, Debit Cards, Net Banking, UPI, and Wallets.
+                    </div>
+
+                    <!-- Razorpay Payment Button -->
+                    <button id="rzp-button" class="btn btn-primary btn-lg w-100 mb-3">
+                        <i class="fas fa-lock me-2"></i>Pay ₹{{ order.total_amount|floatformat:2 }} Securely
+                    </button>
+
+                    <!-- Payment Methods Icons -->
+                    <div class="text-center mt-3">
+                        <p class="text-muted small mb-2">We accept:</p>
+                        <div class="d-flex justify-content-center gap-3 flex-wrap">
+                            <i class="fab fa-cc-visa fa-2x text-muted" title="Visa"></i>
+                            <i class="fab fa-cc-mastercard fa-2x text-muted" title="Mastercard"></i>
+                            <i class="fab fa-cc-amex fa-2x text-muted" title="Amex"></i>
+                            <i class="fas fa-university fa-2x text-muted" title="Net Banking"></i>
+                            <i class="fas fa-mobile-alt fa-2x text-muted" title="UPI"></i>
+                            <i class="fas fa-wallet fa-2x text-muted" title="Wallets"></i>
+                        </div>
+                    </div>
+
+                    <!-- Go Back Link -->
+                    <div class="text-center mt-4">
+                        <a href="{% url 'order_detail' order.id %}" class="text-muted">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Order Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security Notice -->
+            <div class="alert alert-warning">
+                <i class="fas fa-shield-alt me-2"></i>
+                <strong>Security Notice:</strong> Do not refresh or close this page during payment processing.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Razorpay Checkout Script -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    var options = {
+        "key": "{{ razorpay_key_id }}",
+        "amount": "{{ amount }}",
+        "currency": "{{ currency }}",
+        "name": "Pavan Diary",
+        "description": "Order #{{ order.order_number }}",
+        "order_id": "{{ razorpay_order_id }}",
+        "handler": function (response) {
+            // Create a form and submit payment details
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{% url "payment_callback" %}';
+            
+            // Add CSRF token
+            var csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = '{{ csrf_token }}';
+            form.appendChild(csrfInput);
+            
+            // Add payment ID
+            var paymentIdInput = document.createElement('input');
+            paymentIdInput.type = 'hidden';
+            paymentIdInput.name = 'razorpay_payment_id';
+            paymentIdInput.value = response.razorpay_payment_id;
+            form.appendChild(paymentIdInput);
+            
+            // Add order ID
+            var orderIdInput = document.createElement('input');
+            orderIdInput.type = 'hidden';
+            orderIdInput.name = 'razorpay_order_id';
+            orderIdInput.value = response.razorpay_order_id;
+            form.appendChild(orderIdInput);
+            
+            // Add signature
+            var signatureInput = document.createElement('input');
+            signatureInput.type = 'hidden';
+            signatureInput.name = 'razorpay_signature';
+            signatureInput.value = response.razorpay_signature;
+            form.appendChild(signatureInput);
+            
+            // Submit form
+            document.body.appendChild(form);
+            form.submit();
+        },
+        "prefill": {
+            "name": "{{ customer_name }}",
+            "email": "{{ customer_email }}",
+            "contact": "{{ customer_phone }}"
+        },
+        "notes": {
+            "order_number": "{{ order.order_number }}"
+        },
+        "theme": {
+            "color": "#2c5f2d"
+        },
+        "modal": {
+            "ondismiss": function() {
+                alert('Payment cancelled. You can try again or choose a different payment method.');
+            }
+        }
+    };
+
+    var rzp = new Razorpay(options);
+    
+    document.getElementById('rzp-button').onclick = function(e) {
+        rzp.open();
+        e.preventDefault();
+    };
+    
+    // Handle payment errors
+    rzp.on('payment.failed', function (response) {
+        alert('Payment failed: ' + response.error.description);
+        console.error('Payment error:', response.error);
+    });
+</script>
+{% endblock %}

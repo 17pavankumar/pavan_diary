@@ -1,0 +1,194 @@
+/* Profile Page Styles */
+
+/* Page Header */
+.page-header {
+    background: #FFFFFF;
+    color: #2C3E50;
+    padding: 3rem 0;
+    margin: -2rem -2rem 3rem -2rem;
+    text-align: center;
+    border-bottom: 1px solid #E3EDF7;
+}
+
+.page-header h1 {
+    color: #5B9BD5;
+}
+
+.page-header p {
+    color: #7F8C8D;
+}
+
+/* Layout */
+.profile-layout {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 2rem;
+}
+
+/* Profile Card */
+.profile-card {
+    text-align: center;
+}
+
+.profile-avatar {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2c5f2d, #97bc62);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    margin: 0 auto 1rem;
+    color: white;
+}
+
+.profile-name {
+    margin-bottom: 0.5rem;
+}
+
+.profile-email {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+/* Navigation */
+.profile-nav {
+    margin-top: 1rem;
+}
+
+.profile-nav-link {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: #666;
+    text-decoration: none;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: all 0.3s;
+}
+
+.profile-nav-link:hover {
+    background: #f8f9fa;
+    color: #2c5f2d;
+}
+
+.profile-nav-link.active {
+    background: #2c5f2d;
+    color: white;
+}
+
+.logout-link {
+    color: #e74c3c;
+}
+
+/* Tab Content */
+.profile-tab {
+    display: none;
+}
+
+.profile-tab.active-tab {
+    display: block;
+}
+
+.card-header h3 {
+    margin: 0;
+}
+
+/* Forms */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.form-group input.disabled {
+    background: #f8f9fa;
+    cursor: not-allowed;
+}
+
+.form-group small {
+    color: #666;
+    display: block;
+    margin-top: 0.25rem;
+}
+
+/* Order History in Profile (Simplified) */
+.order-card-simple {
+    margin-bottom: 1.5rem;
+}
+
+.order-header-simple {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.order-info-simple {
+    padding: 1rem 0;
+    border-top: 1px solid #e0e0e0;
+}
+
+.order-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.order-total {
+    font-weight: 600;
+    color: #2c5f2d;
+    font-size: 1.2rem;
+}
+
+/* Empty State */
+.empty-state {
+    padding: 2rem;
+    text-align: center;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+/* Password Requirements */
+.password-requirements {
+    background: #e7f5ff;
+    border-left: 4px solid #339af0;
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    color: #1864ab;
+}
+
+.password-requirements ul {
+    margin: 0.5rem 0 0 1.5rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .profile-layout {
+        grid-template-columns: 1fr;
+    }
+}

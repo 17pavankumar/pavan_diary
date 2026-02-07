@@ -1,0 +1,73 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}{{ category.name }} - Pavan Diary{% endblock %}
+
+{% block content %}
+<div class="container section">
+    <div class="breadcrumb">
+        <a href="{% url 'home' %}">Home</a> &gt; 
+        <a href="{% url 'product_list' %}">Products</a> &gt; 
+        <span>{{ category.name }}</span>
+    </div>
+
+    <div class="category-header">
+        <h1>{{ category.name }}</h1>
+        {% if category.description %}
+        <p class="category-description">{{ category.description }}</p>
+        {% endif %}
+    </div>
+
+    <div class="sorting-options">
+        <form method="get" class="sort-form">
+            <select name="sort" onchange="this.form.submit()">
+                <option value="-created_at" {% if sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                <option value="price" {% if sort == 'price' %}selected{% endif %}>Price: Low to High</option>
+                <option value="-price" {% if sort == '-price' %}selected{% endif %}>Price: High to Low</option>
+                <option value="name" {% if sort == 'name' %}selected{% endif %}>Name: A to Z</option>
+                <option value="-rating" {% if sort == '-rating' %}selected{% endif %}>Highest Rated</option>
+            </select>
+        </form>
+    </div>
+
+    {% if products %}
+    <div class="products-grid">
+        {% for product in products %}
+        <div class="product-card">
+            <div class="product-image">
+                {% if product.primary_image %}
+                    <img src="{{ product.primary_image }}" alt="{{ product.name }}">
+                {% else %}
+                    <div class="product-placeholder">🥛</div>
+                {% endif %}
+                
+                {% if product.is_organic %}
+                    <span class="product-badge organic">Organic</span>
+                {% endif %}
+            </div>
+            
+            <div class="product-info">
+                <div class="product-category">{{ category.name }}</div>
+                <h3 class="product-name">{{ product.name }}</h3>
+                <p class="product-description">{{ product.description|truncatewords:10 }}</p>
+                
+                <div class="product-footer">
+                    <div class="product-price">₹{{ product.price }}</div>
+                    {% if product.rating > 0 %}
+                    <div class="product-rating">⭐ {{ product.rating|floatformat:1 }}</div>
+                    {% endif %}
+                </div>
+                
+                <a href="{% url 'product_detail' product.pk %}" class="btn btn-block btn-detail">View Details</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-products">
+        <p>No products found in this category.</p>
+        <a href="{% url 'product_list' %}" class="btn">View All Products</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,157 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Checkout - Pavan Diary{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/pages/checkout.css' %}?v=1">
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>Checkout</h1>
+    <p>Complete your order - Almost there!</p>
+</div>
+
+<div class="checkout-layout">
+    <!-- Checkout Form -->
+    <div>
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Delivery Information -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>📍 Delivery Information</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label>Full Name <span>*</span></label>
+                        <input type="text" name="full_name" required value="{{ user.get_full_name }}" placeholder="Enter your full name">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number <span>*</span></label>
+                        <input type="tel" name="phone" required value="{{ user.phone }}" placeholder="+91 98765 43210">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Delivery Address <span>*</span></label>
+                        <textarea name="address" rows="4" required placeholder="House/Flat No., Street, Landmark">{{ user.address }}</textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>City <span>*</span></label>
+                            <input type="text" name="city" required placeholder="City">
+                        </div>
+
+                        <div class="form-group">
+                            <label>State (Optional)</label>
+                            <input type="text" name="state" placeholder="State">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>PIN Code <span>*</span></label>
+                        <input type="text" name="pincode" required placeholder="577201">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Delivery Instructions (Optional)</label>
+                        <textarea name="notes" rows="2" placeholder="Any special instructions for delivery..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>💳 Payment Method</h3>
+                </div>
+                <div class="card-body">
+                    <div class="payment-methods-grid">
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="COD" checked>
+                            <div>
+                                <div class="payment-option-title">💰 Cash on Delivery</div>
+                                <div class="payment-option-desc">Pay when you receive your order</div>
+                            </div>
+                        </label>
+
+                        <label class="payment-option">
+                            <input type="radio" name="payment_method" value="Online">
+                            <div>
+                                <div class="payment-option-title">💳 Pay Online</div>
+                                <div class="payment-option-desc">UPI, Cards, Net Banking, Wallets</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="alert alert-info payment-info-alert">
+                        <i class="fas fa-info-circle"></i> Online payments are processed securely through Razorpay
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-lg btn-place-order">
+                <i class="fas fa-check-circle"></i> Place Order
+            </button>
+        </form>
+    </div>
+
+    <!-- Order Summary -->
+    <div>
+        <div class="cart-summary">
+            <h3>Order Summary</h3>
+            
+            <div class="summary-items-list">
+                {% for item in cart_items %}
+                <div class="summary-item">
+                    <div>
+                        <div class="summary-item-name">{{ item.product.name }}</div>
+                        <div class="summary-item-qty">Qty: {{ item.quantity }} × ₹{{ item.product.price }}</div>
+                    </div>
+                    <div class="summary-item-price">₹{{ item.subtotal|floatformat:2 }}</div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="cart-summary-row">
+                <span>Subtotal ({{ cart_items.count }} items)</span>
+                <span>₹{{ subtotal|floatformat:2 }}</span>
+            </div>
+            
+            <div class="cart-summary-row">
+                <span>Shipping Charges</span>
+                <span>{% if shipping == 0 %}FREE{% else %}₹{{ shipping|floatformat:2 }}{% endif %}</span>
+            </div>
+            
+            <div class="cart-summary-row total">
+                <span>Total Amount</span>
+                <span>₹{{ total|floatformat:2 }}</span>
+            </div>
+
+            <div class="alert alert-success delivery-alert">
+                <i class="fas fa-truck"></i> Your order will be delivered in 1-2 business days
+            </div>
+
+            {% if subtotal < 500 %}
+            <div class="alert alert-info shipping-alert">
+                <i class="fas fa-info-circle"></i> Add ₹{{ 500|add:subtotal|floatformat:2|slice:"-6:" }} more for FREE shipping!
+            </div>
+            {% endif %}
+
+            <div class="secure-badge">
+                <h4>🔒 Safe & Secure</h4>
+                <ul>
+                    <li>100% secure payment</li>
+                    <li>Easy returns & refunds</li>
+                    <li>Quality guaranteed</li>
+                    <li>Fresh products delivered</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

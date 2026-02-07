@@ -1,0 +1,111 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}My Wishlist - Pavan Diary{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/pages/wishlist.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="page-header wishlist-header">
+    <h1 class="wishlist-title">❤️ My Wishlist</h1>
+    <p class="wishlist-subtitle">Your favorite dairy products</p>
+</div>
+
+{% if wishlist_items %}
+<div class="wishlist-count-wrapper">
+    <p class="wishlist-count-text">
+        You have <strong>{{ wishlist_items.count }}</strong> item{{ wishlist_items.count|pluralize }} in your wishlist
+    </p>
+</div>
+
+<div class="products-grid">
+    {% for item in wishlist_items %}
+    <div class="product-card">
+        <div class="wishlist-card-wrapper">
+            <a href="{% url 'product_detail' item.product.pk %}" class="wishlist-product-link">
+                <div class="product-image">
+                    {% if item.product.images.first %}
+                        <img src="{{ item.product.images.first.image.url }}" alt="{{ item.product.name }}">
+                    {% else %}
+                        🥛
+                    {% endif %}
+                    
+                    {% if item.product.is_organic %}
+                    <span class="product-badge organic">Organic</span>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    <div class="product-category">{{ item.product.category.name }}</div>
+                    <h3 class="product-name">{{ item.product.name }}</h3>
+                    <p class="product-description">{{ item.product.description|truncatewords:15 }}</p>
+                    
+                    <div class="product-footer">
+                        <div>
+                            <span class="product-price">₹{{ item.product.price }}</span>
+                        </div>
+                        <span class="product-rating">⭐ {{ item.product.rating }}</span>
+                    </div>
+
+                    {% if item.product.is_in_stock %}
+                    <span class="product-stock in-stock">In Stock</span>
+                    {% else %}
+                    <span class="product-stock out-of-stock">Out of Stock</span>
+                    {% endif %}
+                </div>
+            </a>
+            
+            <!-- Remove from Wishlist -->
+            <form method="post" action="{% url 'remove_from_wishlist' item.pk %}" class="wishlist-remove-form">
+                {% csrf_token %}
+                <button type="submit" class="wishlist-remove-btn active">
+                    <span class="wishlist-heart-icon">❤️</span>
+                </button>
+            </form>
+        </div>
+        
+        {% if item.product.is_in_stock %}
+        <form method="post" action="{% url 'add_to_cart' item.product.pk %}" class="wishlist-cart-form">
+            {% csrf_token %}
+            <input type="hidden" name="quantity" value="1">
+            <button type="submit" class="btn btn-block">🛒 Add to Cart</button>
+        </form>
+        {% else %}
+        <div class="wishlist-out-of-stock-wrapper">
+            <button class="btn btn-block wishlist-out-of-stock-btn" disabled>Out of Stock</button>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Move All to Cart -->
+{% if wishlist_items %}
+<div class="wishlist-actions-footer">
+    <form method="post" action="{% url 'move_all_to_cart' %}" class="wishlist-action-form">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-lg">
+            🛒 Move All to Cart
+        </button>
+    </form>
+    <form method="post" action="{% url 'clear_wishlist' %}" class="wishlist-clear-form" 
+          onsubmit="return confirm('Are you sure you want to clear your entire wishlist?')">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger btn-outline btn-lg">
+            🗑️ Clear Wishlist
+        </button>
+    </form>
+</div>
+{% endif %}
+
+{% else %}
+<!-- Empty Wishlist -->
+<div class="empty-state">
+    <div class="empty-state-icon">❤️</div>
+    <h2>Your wishlist is empty</h2>
+    <p>Add your favorite dairy products to your wishlist</p>
+    <a href="{% url 'product_list' %}" class="btn btn-lg">Browse Products</a>
+</div>
+{% endif %}
+{% endblock %}
