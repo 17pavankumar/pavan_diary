@@ -4,6 +4,330 @@
 {% block title %}My Orders - Pavan Diary{% endblock %}
 
 {% block content %}
+<div class="page-header" style="background: #ffffff; color: #2C3E50; padding: 3rem 0; margin: -2rem -2rem 3rem -2rem; text-align: center; border-bottom: 1px solid #eee;">
+    <h1 style="color: #5B9BD5; font-size: 2.5rem; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: center; gap: 1rem;">
+        <span style="font-size: 2.8rem;">📦</span> My Orders
+    </h1>
+    <p style="font-size: 1.1rem; color: #666;">Track and manage your orders</p>
+</div>
+
+{% if orders %}
+<!-- Filter Tabs -->
+<div style="margin-bottom: 2rem; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+    <div style="display: flex; gap: 1rem; padding: 0.5rem 0; min-width: max-content;">
+        <a href="?status=all" class="badge {% if not request.GET.status or request.GET.status == 'all' %}badge-primary{% else %}badge-secondary{% endif %}" 
+           style="padding: 0.7rem 1.5rem; text-decoration: none; white-space: nowrap; border-radius: 25px; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            All Orders ({{ orders.count }})
+        </a>
+        <a href="?status=pending" class="badge {% if request.GET.status == 'pending' %}badge-warning{% else %}badge-secondary{% endif %}" 
+           style="padding: 0.7rem 1.5rem; text-decoration: none; white-space: nowrap; border-radius: 25px; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            ⏳ Pending
+        </a>
+        <a href="?status=confirmed" class="badge {% if request.GET.status == 'confirmed' %}badge-info{% else %}badge-secondary{% endif %}" 
+           style="padding: 0.7rem 1.5rem; text-decoration: none; white-space: nowrap; border-radius: 25px; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            ✓ Confirmed
+        </a>
+        <a href="?status=shipped" class="badge {% if request.GET.status == 'shipped' %}badge-primary{% else %}badge-secondary{% endif %}" 
+           style="padding: 0.7rem 1.5rem; text-decoration: none; white-space: nowrap; border-radius: 25px; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            🚚 Shipped
+        </a>
+        <a href="?status=delivered" class="badge {% if request.GET.status == 'delivered' %}badge-success{% else %}badge-secondary{% endif %}" 
+           style="padding: 0.7rem 1.5rem; text-decoration: none; white-space: nowrap; border-radius: 25px; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            ✅ Delivered
+        </a>
+        <a href="?status=cancelled" class="badge {% if request.GET.status == 'cancelled' %}badge-danger{% else %}badge-secondary{% endif %}" 
+           style="padding: 0.7rem 1.5rem; text-decoration: none; white-space: nowrap; border-radius: 25px; font-weight: 600; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            ❌ Cancelled
+        </a>
+    </div>
+</div>
+
+<div style="display: grid; gap: 2rem;">
+    {% for order in orders %}
+    <div class="order-card" style="background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); overflow: hidden; transition: all 0.3s; border: 1px solid #f0f0f0;">
+        <!-- Order Header -->
+        <div class="order-header" style="padding: 1.5rem; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-bottom: 2px solid #e0e0e0;">
+            <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <div class="order-number" style="font-size: 1.4rem; font-weight: 700; color: #2c5f2d; margin-bottom: 0.5rem;">
+                        Order #{{ order.order_number }}
+                    </div>
+                    <div style="color: #666; font-size: 0.95rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-size: 1.1rem;">📅</span>
+                        Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"h:i A" }}
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <span class="order-status {{ order.status }}" style="display: inline-block; padding: 0.6rem 1.2rem; border-radius: 20px; font-weight: 700; text-transform: uppercase; font-size: 0.85rem; margin-bottom: 0.7rem;">
+                        {{ order.get_status_display }}
+                    </span>
+                    <div>
+                        <span class="badge {% if order.payment_status == 'completed' %}badge-success{% else %}badge-warning{% endif %}" 
+                              style="padding: 0.5rem 1rem; border-radius: 15px; font-size: 0.85rem; font-weight: 600; display: inline-flex; align-items: center; gap: 0.4rem;">
+                            <span style="font-size: 1rem;">💳</span>
+                            {{ order.payment_status|title }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Summary -->
+        <div style="padding: 1.5rem; border-bottom: 1px solid #e9ecef;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                <div style="padding: 1rem; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #667eea;">
+                    <div style="color: #666; font-size: 0.88rem; margin-bottom: 0.4rem; font-weight: 500;">Items</div>
+                    <div style="font-weight: 700; font-size: 1.2rem; color: #2c3e50;">
+                        {{ order.items.count }} product{{ order.items.count|pluralize }}
+                    </div>
+                </div>
+                <div style="padding: 1rem; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #2c5f2d;">
+                    <div style="color: #666; font-size: 0.88rem; margin-bottom: 0.4rem; font-weight: 500;">Total Amount</div>
+                    <div style="font-weight: 700; color: #2c5f2d; font-size: 1.5rem;">₹{{ order.total_amount }}</div>
+                </div>
+                <div style="padding: 1rem; background: #f8f9fa; border-radius: 10px; border-left: 4px solid #3498db;">
+                    <div style="color: #666; font-size: 0.88rem; margin-bottom: 0.4rem; font-weight: 500;">Payment Method</div>
+                    <div style="font-weight: 700; font-size: 1.1rem; color: #2c3e50; text-transform: capitalize;">
+                        {{ order.payment_method }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Items Preview with Real Images -->
+            <div style="margin-top: 1.5rem;">
+                <h4 style="font-size: 1rem; color: #555; margin-bottom: 1rem; font-weight: 600;">Order Items:</h4>
+                <div style="display: flex; gap: 1rem; overflow-x: auto; padding-bottom: 0.5rem;">
+                    {% for item in order.items.all|slice:":4" %}
+                    <div style="min-width: 140px; max-width: 140px; flex-shrink: 0;">
+                        <div style="background: #ffffff; border: 2px solid #e9ecef; padding: 0.75rem; border-radius: 12px; text-align: center; transition: all 0.3s; cursor: pointer; height: 100%;" 
+                             onmouseover="this.style.borderColor='#2c5f2d'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 15px rgba(0,0,0,0.1)'" 
+                             onmouseout="this.style.borderColor='#e9ecef'; this.style.transform=''; this.style.boxShadow=''">
+                            
+                            <!-- Product Image -->
+                            <div style="width: 100%; height: 90px; border-radius: 8px; overflow: hidden; margin-bottom: 0.6rem; background: #f8f9fa;">
+                                {% if item.product.image %}
+                                    <img src="{{ item.product.image.url }}" 
+                                         alt="{{ item.product.name }}" 
+                                         style="width: 100%; height: 100%; object-fit: cover;">
+                                {% elif item.product.images.first %}
+                                    <img src="{{ item.product.images.first.image.url }}" 
+                                         alt="{{ item.product.name }}" 
+                                         style="width: 100%; height: 100%; object-fit: cover;">
+                                {% else %}
+                                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #dee2e6;">
+                                        📦
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Product Info -->
+                            <div style="font-size: 0.88rem; font-weight: 600; color: #2c3e50; margin-bottom: 0.3rem; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; min-height: 2.6em;">
+                                {{ item.product.name|default:"Product"|truncatewords:4 }}
+                            </div>
+                            <div style="font-size: 0.8rem; color: #666; background: #e8f5e9; padding: 0.3rem 0.6rem; border-radius: 10px; display: inline-block;">
+                                Qty: {{ item.quantity }}
+                            </div>
+                            <div style="font-size: 0.85rem; color: #2c5f2d; font-weight: 700; margin-top: 0.4rem;">
+                                ₹{{ item.subtotal }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    {% if order.items.count > 4 %}
+                    <div style="min-width: 120px; max-width: 120px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 12px; border: 2px dashed #d0d0d0;">
+                        <div style="text-align: center; color: #666;">
+                            <div style="font-size: 2rem; font-weight: 700; color: #2c5f2d; margin-bottom: 0.3rem;">
+                                +{{ order.items.count|add:"-4" }}
+                            </div>
+                            <div style="font-size: 0.8rem; font-weight: 600;">more item{{ order.items.count|add:"-4"|pluralize }}</div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Actions -->
+        <div style="padding: 1.5rem; background: #fafbfc; display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+            <a href="{% url 'order_detail' order.id %}" class="btn" 
+               style="padding: 0.8rem 1.5rem; background: linear-gradient(135deg, #2c5f2d 0%, #27ae60 100%); color: white; text-decoration: none; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s; box-shadow: 0 3px 10px rgba(44, 95, 45, 0.3);"
+               onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 5px 15px rgba(44, 95, 45, 0.4)'"
+               onmouseout="this.style.transform=''; this.style.boxShadow='0 3px 10px rgba(44, 95, 45, 0.3)'">
+                <span style="font-size: 1.1rem;">📄</span> View Details
+            </a>
+            
+            {% if order.status == 'delivered' %}
+            <button class="btn btn-outline" 
+                    style="padding: 0.8rem 1.5rem; background: white; color: #f39c12; border: 2px solid #f39c12; text-decoration: none; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: all 0.3s;"
+                    onmouseover="this.style.background='#f39c12'; this.style.color='white'"
+                    onmouseout="this.style.background='white'; this.style.color='#f39c12'">
+                <span style="font-size: 1.1rem;">⭐</span> Rate Products
+            </button>
+            {% endif %}
+            
+            {% if order.status in 'pending,confirmed' %}
+            <form method="post" action="{% url 'cancel_order' order.id %}" style="display: inline;" 
+                  onsubmit="return confirm('Are you sure you want to cancel this order?')">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger btn-outline" 
+                        style="padding: 0.8rem 1.5rem; background: white; color: #e74c3c; border: 2px solid #e74c3c; text-decoration: none; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer; transition: all 0.3s;"
+                        onmouseover="this.style.background='#e74c3c'; this.style.color='white'"
+                        onmouseout="this.style.background='white'; this.style.color='#e74c3c'">
+                    <span style="font-size: 1.1rem;">❌</span> Cancel Order
+                </button>
+            </form>
+            {% endif %}
+            
+            <a href="#" class="btn btn-outline" 
+               style="padding: 0.8rem 1.5rem; background: white; color: #3498db; border: 2px solid #3498db; text-decoration: none; border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.3s;"
+               onmouseover="this.style.background='#3498db'; this.style.color='white'"
+               onmouseout="this.style.background='white'; this.style.color='#3498db'">
+                <span style="font-size: 1.1rem;">💬</span> Contact Support
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="empty-state" style="text-align: center; padding: 5rem 2rem; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08);">
+    <div class="empty-state-icon" style="font-size: 6rem; margin-bottom: 1.5rem; opacity: 0.5;">📦</div>
+    <h2 style="font-size: 2rem; color: #2c3e50; margin-bottom: 1rem;">No orders found</h2>
+    <p style="font-size: 1.1rem; color: #7f8c8d; margin-bottom: 2rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+        You haven't placed any orders yet. Start shopping to see your orders here!
+    </p>
+    <a href="{% url 'product_list' %}" class="btn btn-lg" 
+       style="padding: 1rem 2.5rem; background: linear-gradient(135deg, #2c5f2d 0%, #27ae60 100%); color: white; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 1.1rem; display: inline-flex; align-items: center; gap: 0.7rem; transition: all 0.3s; box-shadow: 0 4px 15px rgba(44, 95, 45, 0.3);"
+       onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 6px 20px rgba(44, 95, 45, 0.4)'"
+       onmouseout="this.style.transform=''; this.style.boxShadow='0 4px 15px rgba(44, 95, 45, 0.3)'">
+        <span style="font-size: 1.3rem;">🛍️</span> Start Shopping
+    </a>
+</div>
+{% endif %}
+
+<style>
+    /* Order Status Badges */
+    .order-status {
+        display: inline-block;
+    }
+    
+    .order-status.pending {
+        background: linear-gradient(135deg, #fff3cd 0%, #ffe8a1 100%);
+        color: #856404;
+        border: 2px solid #ffc107;
+    }
+    
+    .order-status.confirmed {
+        background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        color: #0c5460;
+        border: 2px solid #17a2b8;
+    }
+    
+    .order-status.shipped {
+        background: linear-gradient(135deg, #cce5ff 0%, #b8daff 100%);
+        color: #004085;
+        border: 2px solid #007bff;
+    }
+    
+    .order-status.delivered {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        color: #155724;
+        border: 2px solid #28a745;
+    }
+    
+    .order-status.cancelled {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        color: #721c24;
+        border: 2px solid #dc3545;
+    }
+    
+    /* Filter Badge Hover Effects */
+    .badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important;
+    }
+    
+    .badge-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .badge-warning {
+        background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        color: white;
+    }
+    
+    .badge-info {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+    }
+    
+    .badge-success {
+        background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        color: white;
+    }
+    
+    .badge-danger {
+        background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        color: white;
+    }
+    
+    .badge-secondary {
+        background: #95a5a6;
+        color: white;
+    }
+    
+    /* Order Card Hover Effect */
+    .order-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .order-header > div {
+            flex-direction: column;
+        }
+        
+        .order-header > div > div:last-child {
+            text-align: left !important;
+            margin-top: 1rem;
+        }
+        
+        .page-header h1 {
+            font-size: 2rem !important;
+        }
+    }
+    
+    /* Smooth Scrollbar for Product Preview */
+    div[style*="overflow-x: auto"]::-webkit-scrollbar {
+        height: 8px;
+    }
+    
+    div[style*="overflow-x: auto"]::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+    
+    div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb {
+        background: #2c5f2d;
+        border-radius: 10px;
+    }
+    
+    div[style*="overflow-x: auto"]::-webkit-scrollbar-thumb:hover {
+        background: #27ae60;
+    }
+</style>
+{% endblock %}
+
+{% comment %} {% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}My Orders - Pavan Diary{% endblock %}
+
+{% block content %}
 <div class="page-header" style="background: linear-gradient(135deg, #2c5f2d, #1e4620); color: white; padding: 3rem 0; margin: -2rem -2rem 3rem -2rem; text-align: center;">
     <h1 style="color: white;">📦 My Orders</h1>
     <p>Track and manage your orders</p>
@@ -126,4 +450,4 @@
     <a href="{% url 'product_list' %}" class="btn btn-lg">Start Shopping</a>
 </div>
 {% endif %}
-{% endblock %}
+{% endblock %} {% endcomment %}

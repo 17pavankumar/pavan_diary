@@ -7,9 +7,9 @@
     
     <!-- Stylesheets -->
     {% load static %}
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
-    <link rel="stylesheet" href="{% static 'css/components.css' %}">
-    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <link rel="stylesheet" href="{% static 'css/main.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}?v=2">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}?v=2">
     
     <style>
         /* Page-specific styles can go here */
@@ -31,7 +31,7 @@
                         <li><a href="{% url 'wishlist' %}">❤️ Wishlist</a></li>
                         <li><a href="{% url 'order_list' %}">My Orders</a></li>
                         <li><a href="{% url 'profile' %}">Profile</a></li>
-                        <li><a href="{% url 'cart' %}" class="cart-icon">🛒 <span class="cart-count">0</span></a></li>
+                        <li><a href="{% url 'cart' %}" class="cart-icon">🛒 <span class="cart-count">{{ cart_count }}</span></a></li>
                         <li><a href="{% url 'logout' %}">Logout</a></li>
                     {% else %}
                         <li><a href="{% url 'login' %}">Login</a></li>

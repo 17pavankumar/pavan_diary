@@ -67,11 +67,23 @@
 
 /* ===== MOBILE (< 768px) ===== */
 @media (max-width: 768px) {
+
     /* Typography */
-    h1 { font-size: 2rem; }
-    h2 { font-size: 1.75rem; }
-    h3 { font-size: 1.5rem; }
-    h4 { font-size: 1.25rem; }
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.75rem;
+    }
+
+    h3 {
+        font-size: 1.5rem;
+    }
+
+    h4 {
+        font-size: 1.25rem;
+    }
 
     .section-title {
         font-size: 1.8rem;
@@ -344,7 +356,8 @@
     input[type="tel"],
     textarea,
     select {
-        font-size: 16px; /* Prevents zoom on iOS */
+        font-size: 16px;
+        /* Prevents zoom on iOS */
     }
 
     /* Footer */
@@ -411,6 +424,7 @@
 
 /* ===== SMALL MOBILE (< 480px) ===== */
 @media (max-width: 480px) {
+
     /* Hero */
     .hero h1 {
         font-size: 1.5rem;
@@ -490,6 +504,7 @@
 
 /* ===== LARGE DESKTOP (> 1440px) ===== */
 @media (min-width: 1440px) {
+
     .container,
     main {
         max-width: 1400px;
@@ -547,6 +562,7 @@
 
 /* ===== PRINT STYLES ===== */
 @media print {
+
     header,
     footer,
     nav,
@@ -587,14 +603,14 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transition: all 0.3s ease;
     z-index: 10;
 }
 
 .wishlist-btn:hover {
     transform: scale(1.15);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
 }
 
 .wishlist-btn.active {
@@ -635,7 +651,7 @@
 
 /* Primary Add to Cart Button */
 .btn-primary {
-    background: linear-gradient(135deg, #2c5f2d 0%, #1e7e34 100%);
+    background: linear-gradient(135deg, #5B9BD5 0%, #4A7FB8 100%);
     color: white;
     border: none;
     padding: 15px 30px;
@@ -644,13 +660,13 @@
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(44, 95, 45, 0.3);
+    box-shadow: 0 4px 15px rgba(91, 155, 213, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(44, 95, 45, 0.4);
-    background: linear-gradient(135deg, #1e7e34 0%, #2c5f2d 100%);
+    box-shadow: 0 6px 20px rgba(91, 155, 213, 0.4);
+    background: linear-gradient(135deg, #4A7FB8 0%, #5B9BD5 100%);
 }
 
 .btn-primary:active {
@@ -659,10 +675,10 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .product-detail-info > form > div:last-child {
+    .product-detail-info>form>div:last-child {
         flex-direction: column;
     }
-    
+
     .btn-primary,
     .btn-wishlist {
         flex: 1 !important;
