@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'products',
     'cart',
     'orders',
+    'payment',
 ]
 
 MIDDLEWARE = [
@@ -153,17 +154,50 @@ MESSAGE_TAGS = {
     messages.ERROR: 'error',
 }
 
-# Email Configuration (for production)
+# # Email Configuration
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = 'smtp.gmail.com'
 # EMAIL_PORT = 587
 # EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'your-email@gmail.com'
-# EMAIL_HOST_PASSWORD = 'your-app-password'
+# EMAIL_HOST_USER = ''
+# EMAIL_HOST_PASSWORD = ''
 
-# Payment Gateway Settings (Example for Razorpay)
-# RAZORPAY_KEY_ID = 'your_razorpay_key_id'
-# RAZORPAY_KEY_SECRET = 'your_razorpay_key_secret'
+# # Payment Gateway Settings (Razorpay)
+# RAZORPAY_KEY_ID = ''
+# RAZORPAY_KEY_SECRET = ''
+
+import os
+
+# Helper to get env vars with defaults or casting
+def get_env(key, default=None, cast=None):
+    val = os.environ.get(key, default)
+    if cast and val is not None:
+        try:
+            return cast(val)
+        except (ValueError, TypeError):
+            return default
+    return val
+
+# Email Configs
+EMAIL_BACKEND = get_env('EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = get_env('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_USE_TLS = get_env('EMAIL_USE_TLS', True, cast=bool)
+EMAIL_PORT = get_env('EMAIL_PORT', 587, cast=int)
+EMAIL_HOST_USER = get_env('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = get_env('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# Razorpay configs
+
+RAZORPAY_KEY_ID = get_env('RAZORPAY_KEY_ID', '')
+RAZORPAY_KEY_SECRET = get_env('RAZORPAY_KEY_SECRET', '')
+
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://api.razorpay.com',  # Add Razorpay's domain
+]
+TIME_ZONE = 'Asia/Kolkata'  # Change to your local time zone
+USE_TZ = True
 
 # Stripe Settings (Alternative)
 # STRIPE_PUBLIC_KEY = 'your_stripe_public_key'
@@ -176,4 +210,3 @@ MESSAGE_TAGS = {
 # SECURE_BROWSER_XSS_FILTER = True
 # SECURE_CONTENT_TYPE_NOSNIFF = True
 # X_FRAME_OPTIONS = 'DENY'
-

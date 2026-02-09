@@ -101,6 +101,8 @@
     </div>
 </div>
 
+
+
 <!-- Razorpay Checkout Script -->
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
@@ -108,7 +110,7 @@
         "key": "{{ razorpay_key_id }}",
         "amount": "{{ amount }}",
         "currency": "{{ currency }}",
-        "name": "Pavan Diary",
+        "name": "Pavan Dairy",
         "description": "Order #{{ order.order_number }}",
         "order_id": "{{ razorpay_order_id }}",
         "handler": function (response) {
@@ -173,11 +175,5 @@
         rzp.open();
         e.preventDefault();
     };
-    
-    // Handle payment errors
-    rzp.on('payment.failed', function (response) {
-        alert('Payment failed: ' + response.error.description);
-        console.error('Payment error:', response.error);
-    });
 </script>
 {% endblock %}

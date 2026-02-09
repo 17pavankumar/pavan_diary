@@ -9,21 +9,9 @@ from datetime import datetime
 
 from products.models import Product
 from cart.models import CartItem
-from orders.models import Order, OrderItem, Payment
+from orders.models import Order, OrderItem
 
-# Razorpay imports - wrapped in try-except for development without razorpay
-try:
-    import razorpay
-    RAZORPAY_AVAILABLE = True
-    # Initialize Razorpay client only if keys are available
-    if hasattr(settings, 'RAZORPAY_KEY_ID') and hasattr(settings, 'RAZORPAY_KEY_SECRET'):
-        razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
-    else:
-        razorpay_client = None
-        RAZORPAY_AVAILABLE = False
-except ImportError:
-    RAZORPAY_AVAILABLE = False
-    razorpay_client = None
+
 
 
 @login_required
@@ -58,6 +46,7 @@ def checkout(request):
     
     if request.method == 'POST':
         # Get form data
+        # Get form data
         full_name = request.POST.get('full_name', '').strip()
         phone = request.POST.get('phone', '').strip()
         address = request.POST.get('address', '').strip()
@@ -65,10 +54,11 @@ def checkout(request):
         state = request.POST.get('state', '').strip()
         pincode = request.POST.get('pincode', '').strip()
         notes = request.POST.get('notes', '').strip()
+        save_address = request.POST.get('save_address')
         payment_method = request.POST.get('payment_method', 'COD')
         
         # Validation
-        if not all([full_name, phone, address, city, pincode]):
+        if not all([full_name, phone, address, city, state, pincode]):
             messages.error(request, 'Please fill all required fields')
             return render(request, 'orders/checkout.html', {
                 'cart_items': cart_items,
@@ -86,12 +76,19 @@ def checkout(request):
                 'shipping': shipping,
                 'total': total,
             })
+            
+        # Save address to profile if requested or if empty
+        user = request.user
+        if save_address or not user.address:
+            user.phone = phone
+            user.address = address
+            user.city = city
+            user.state = state
+            user.pincode = pincode
+            user.save()
         
-        # Combine address
-        full_address = f"{address}, {city}"
-        if state:
-            full_address += f", {state}"
-        full_address += f" - {pincode}"
+        # Combine address for order record
+        full_address = f"{address}, {city}, {state} - {pincode}"
         
         # Create order
         order = Order.objects.create(
@@ -121,17 +118,15 @@ def checkout(request):
         # Clear cart
         cart_items.delete()
         
-        messages.success(request, f'✅ Order {order.order_number} placed successfully!')
-        
-        # Redirect to payment or order detail based on payment method
         if payment_method == 'COD':
             # For COD, mark as pending and go to order detail
             order.status = 'confirmed'
             order.save()
+            messages.success(request, f'✅ Order {order.order_number} placed successfully!')
             return redirect('order_detail', order_id=order.id)
         else:
             # For online payment, redirect to payment page
-            return redirect('payment', order_id=order.id)
+            return redirect('payment_process', order_id=order.id)
     
     context = {
         'cart_items': cart_items,
@@ -142,116 +137,7 @@ def checkout(request):
     return render(request, 'orders/checkout.html', context)
 
 
-@login_required
-def payment(request, order_id):
-    """Payment processing page with Razorpay integration"""
-    order = get_object_or_404(Order, id=order_id, customer=request.user)
-    
-    # If already paid, redirect to order detail
-    if order.payment_status == 'completed':
-        messages.info(request, 'This order has already been paid')
-        return redirect('order_detail', order_id=order.id)
-    
-    # Check if Razorpay is available
-    if not RAZORPAY_AVAILABLE or not razorpay_client:
-        messages.error(request, 'Online payment is currently unavailable. Please use Cash on Delivery.')
-        return redirect('order_detail', order_id=order.id)
-    
-    # Create Razorpay order if not already created
-    if not order.razorpay_order_id:
-        try:
-            razorpay_order = razorpay_client.order.create({
-                'amount': order.get_amount_in_paise(),
-                'currency': 'INR',
-                'payment_capture': '1',
-                'notes': {
-                    'order_number': order.order_number,
-                    'customer_name': order.customer.get_full_name() or order.customer.username
-                }
-            })
-            order.razorpay_order_id = razorpay_order['id']
-            order.save()
-        except Exception as e:
-            messages.error(request, f'Unable to create payment: {str(e)}')
-            return redirect('order_detail', order_id=order.id)
-    
-    context = {
-        'order': order,
-        'razorpay_key_id': settings.RAZORPAY_KEY_ID,
-        'razorpay_order_id': order.razorpay_order_id,
-        'amount': order.get_amount_in_paise(),
-        'currency': 'INR',
-        'customer_name': order.customer.get_full_name() or order.customer.username,
-        'customer_email': order.customer.email,
-        'customer_phone': order.phone,
-    }
-    return render(request, 'orders/payment.html', context)
 
-
-@csrf_exempt
-def payment_callback(request):
-    """Handle Razorpay payment callback"""
-    if request.method == 'POST':
-        try:
-            # Check if Razorpay is available
-            if not RAZORPAY_AVAILABLE or not razorpay_client:
-                messages.error(request, 'Payment processing unavailable.')
-                return redirect('home')
-            
-            # Get payment details from request
-            razorpay_payment_id = request.POST.get('razorpay_payment_id')
-            razorpay_order_id = request.POST.get('razorpay_order_id')
-            razorpay_signature = request.POST.get('razorpay_signature')
-            
-            # Get the order
-            order = get_object_or_404(Order, razorpay_order_id=razorpay_order_id)
-            
-            # Verify payment signature
-            params_dict = {
-                'razorpay_order_id': razorpay_order_id,
-                'razorpay_payment_id': razorpay_payment_id,
-                'razorpay_signature': razorpay_signature
-            }
-            
-            # Verify signature
-            try:
-                razorpay_client.utility.verify_payment_signature(params_dict)
-                
-                # Payment successful
-                order.razorpay_payment_id = razorpay_payment_id
-                order.razorpay_signature = razorpay_signature
-                order.payment_status = 'completed'
-                order.status = 'confirmed'
-                order.save()
-                
-                # Create payment record
-                Payment.objects.create(
-                    order=order,
-                    transaction_id=razorpay_payment_id,
-                    amount=order.total_amount,
-                    payment_method='Razorpay',
-                    status='completed',
-                    razorpay_order_id=razorpay_order_id,
-                    razorpay_payment_id=razorpay_payment_id,
-                    razorpay_signature=razorpay_signature,
-                    payment_date=datetime.now()
-                )
-                
-                messages.success(request, '✅ Payment successful! Your order has been confirmed.')
-                return redirect('order_detail', order_id=order.id)
-                
-            except Exception as e:
-                # Payment signature verification failed
-                order.payment_status = 'failed'
-                order.save()
-                messages.error(request, f'❌ Payment verification failed: {str(e)}')
-                return redirect('order_detail', order_id=order.id)
-                
-        except Exception as e:
-            messages.error(request, f'❌ Payment processing error: {str(e)}')
-            return redirect('home')
-    
-    return redirect('home')
 
 
 @login_required

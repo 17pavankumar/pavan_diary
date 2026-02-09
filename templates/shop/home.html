@@ -1,0 +1,184 @@
+{% extends 'shop/base.html' %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<div class="hero">
+    <div style="max-width: 600px;">
+        <h1>Get Organic & Fresh Dairy From Us</h1>
+        <p style="color: #dce4e4ff;">Our diet was heavy on starchy staples, but we were lucky that our moms also grew vegetables in our backyards.</p>
+        <div class="hero-buttons">
+            <a href="{% url 'product_list' %}" class="btn">Read More</a>
+        </div>
+    </div>
+</div>
+
+<!-- Services Section -->
+<section class="section">
+    <h2 class="section-title">Services We Provide</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; max-width: 800px; margin: 0 auto;">
+        <div style="text-align: center; padding: 2rem 1rem; background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(91, 155, 213, 0.08);">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🥛</div>
+            <h3 style="font-size: 1rem; color: #2C3E50;">BH Proteins</h3>
+        </div>
+        <div style="text-align: center; padding: 2rem 1rem; background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(91, 155, 213, 0.08);">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🧈</div>
+            <h3 style="font-size: 1rem; color: #2C3E50;">High Quality</h3>
+        </div>
+        <div style="text-align: center; padding: 2rem 1rem; background: white; border-radius: 16px; box-shadow: 0 2px 8px rgba(91, 155, 213, 0.08);">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🚚</div>
+            <h3 style="font-size: 1rem; color: #2C3E50;">Fast Delivery</h3>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Categories -->
+<section class="section">
+    <h2 class="section-title">Featured Categories</h2>
+    <div class="categories">
+        <a href="{% url 'product_list' %}?category=milk" class="category-card">
+            <div class="category-icon">🥛</div>
+            <h3>Milk</h3>
+            <p>Fresh & Pure</p>
+        </a>
+        <a href="{% url 'product_list' %}?category=eggs" class="category-card">
+            <div class="category-icon">🥚</div>
+            <h3>Eggs</h3>
+            <p>Farm Fresh</p>
+        </a>
+        <a href="{% url 'product_list' %}?category=cheese" class="category-card">
+            <div class="category-icon">🧀</div>
+            <h3>Cheese</h3>
+            <p>Artisan Quality</p>
+        </a>
+        <a href="{% url 'product_list' %}?category=butter" class="category-card">
+            <div class="category-icon">🧈</div>
+            <h3>Butter</h3>
+            <p>Premium</p>
+        </a>
+        <a href="{% url 'product_list' %}?category=ghee" class="category-card">
+            <div class="category-icon">�</div>
+            <h3>Ghee</h3>
+            <p>Pure & Organic</p>
+        </a>
+        <a href="{% url 'product_list' %}?category=icecream" class="category-card">
+            <div class="category-icon">🍦</div>
+            <h3>Ice Cream</h3>
+            <p>Delicious</p>
+        </a>
+        <a href="{% url 'product_list' %}?category=cream" class="category-card">
+            <div class="category-icon">�</div>
+            <h3>Condensed Milk</h3>
+            <p>Rich & Creamy</p>
+        </a>
+        <a href="{% url 'product_list' %}?category=creamcheese" class="category-card">
+            <div class="category-icon">🧈</div>
+            <h3>Heavy Cream</h3>
+            <p>Premium</p>
+        </a>
+    </div>
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="{% url 'product_list' %}" class="btn">View All</a>
+    </div>
+</section>
+
+<!-- Featured Products -->
+<section class="section">
+    <h2 class="section-title">Featured Products</h2>
+    <div class="products-grid">
+        {% for product in featured_products %}
+        <div class="product-card">
+            <div class="product-image">
+                {% if product.primary_image %}
+                    <img src="{{ product.primary_image }}" alt="{{ product.name }}">
+                {% else %}
+                    <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 4rem; background: #F8FBFD;">
+                        🥛
+                    </div>
+                {% endif %}
+                
+                {% if product.is_organic %}
+                    <span class="product-badge organic">Organic</span>
+                {% endif %}
+            </div>
+            
+            <div class="product-info">
+                <div class="product-category">{{ product.category.name }}</div>
+                <h3 class="product-name">{{ product.name }}</h3>
+                <p class="product-description">{{ product.description|truncatewords:12 }}</p>
+                
+                <div class="product-footer">
+                    <div class="product-price">₹{{ product.price }}</div>
+                    {% if product.rating > 0 %}
+                    <div class="product-rating">⭐ {{ product.rating|floatformat:1 }}</div>
+                    {% endif %}
+                </div>
+                
+                <a href="{% url 'product_detail' product.pk %}" class="btn btn-block" style="margin-top: 1rem;">View Details</a>
+            </div>
+        </div>
+        {% empty %}
+        <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted);">No featured products available</p>
+        {% endfor %}
+    </div>
+    
+    {% if featured_products %}
+    <div style="text-align: center; margin-top: 2rem;">
+        <a href="{% url 'product_list' %}" class="btn btn-secondary">View All Products</a>
+    </div>
+    {% endif %}
+</section>
+
+<!-- About Section -->
+<section class="section" style="background: white; padding: 4rem 2rem; border-radius: 24px; box-shadow: 0 2px 8px rgba(91, 155, 213, 0.08);">
+    <div style="max-width: 900px; margin: 0 auto; text-align: center;">
+        <h2 style="font-size: 2rem; margin-bottom: 1.5rem;">Get to Know About Us</h2>
+        <p style="font-size: 1.125rem; color: var(--text-muted); margin-bottom: 2rem;">
+            Access to sufficient, robust cow free-fed milk! Dairy House is a 100 countries, and that means our consumers' needs can vary. 
+            Our teams are working to help meet those diverse needs across our service chain.
+        </p>
+        <div style="display: flex; gap: 3rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+            <div>
+                <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary);">23</div>
+                <div style="color: var(--text-muted); font-size: 0.9375rem;">Years of Experience</div>
+            </div>
+            <div>
+                <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary);">94</div>
+                <div style="color: var(--text-muted); font-size: 0.9375rem;">Happy Customers</div>
+            </div>
+            <div>
+                <div style="font-size: 2.5rem; font-weight: 700; color: var(--primary);">17</div>
+                <div style="color: var(--text-muted); font-size: 0.9375rem;">Company Partners</div>
+            </div>
+        </div>
+        <div style="margin-top: 2rem;">
+            <a href="#" class="btn">Learn More</a>
+        </div>
+    </div>
+</section>
+
+<!-- Features -->
+<section class="features">
+    <div class="feature">
+        <div class="feature-icon">🚚</div>
+        <h3>Fast Delivery</h3>
+        <p>Same day delivery for fresh products</p>
+    </div>
+    <div class="feature">
+        <div class="feature-icon">🏆</div>
+        <h3>Premium Quality</h3>
+        <p>100% quality guaranteed</p>
+    </div>
+    <div class="feature">
+        <div class="feature-icon">🌱</div>
+        <h3>Organic Options</h3>
+        <p>Certified organic products</p>
+    </div>
+    <div class="feature">
+        <div class="feature-icon">💳</div>
+        <h3>Secure Payment</h3>
+        <p>Safe checkout process</p>
+    </div>
+</section>
+
+{% endblock %}

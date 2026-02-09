@@ -1,329 +1,349 @@
-{% extends 'shop/base.html' %}
+{% extends 'core/base.html' %}
 {% load static %}
 
 {% block title %}Order #{{ order.order_number }} - Pavan Diary{% endblock %}
 
-{% block content %}
-<div class="breadcrumb">
-    <a href="{% url 'home' %}">Home</a>
-    <span>›</span>
-    <a href="{% url 'order_list' %}">My Orders</a>
-    <span>›</span>
-    <span>Order #{{ order.order_number }}</span>
-</div>
-
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
-    <!-- Order Details -->
-    <div>
-        <!-- Order Header -->
-        <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-body">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-                    <div>
-                        <h1 style="margin-bottom: 0.5rem; font-size: 1.8rem; color: #2c5f2d;">Order #{{ order.order_number }}</h1>
-                        <p style="color: #666; font-size: 0.95rem;">
-                            <i class="far fa-calendar"></i> Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"h:i A" }}
-                        </p>
-                    </div>
-                    <span class="order-status {{ order.status }}" style="padding: 0.5rem 1.2rem; border-radius: 20px; font-weight: 600; text-transform: uppercase; font-size: 0.85rem;">
-                        {{ order.get_status_display }}
-                    </span>
-                </div>
-
-                <!-- Order Timeline -->
-                <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 1.5rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                    <h3 style="margin-bottom: 1.5rem; font-size: 1.1rem; color: #2c5f2d; display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.3rem;">📍</span> Order Tracking
-                    </h3>
-                    <div style="position: relative;">
-                        <div style="position: absolute; left: 15px; top: 30px; bottom: 30px; width: 3px; background: linear-gradient(to bottom, #27ae60 0%, #e0e0e0 100%); border-radius: 2px;"></div>
-                        
-                        <div class="timeline-item" style="position: relative; padding-left: 3.5rem; padding-bottom: 2rem;">
-                            <div style="position: absolute; left: 0; top: 0; width: 33px; height: 33px; border-radius: 50%; background: linear-gradient(135deg, #27ae60 0%, #229954 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1rem; box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);">✓</div>
-                            <div style="font-weight: 600; margin-bottom: 0.3rem; color: #2c3e50; font-size: 1rem;">Order Placed</div>
-                            <div style="font-size: 0.88rem; color: #7f8c8d;">{{ order.created_at|date:"F d, Y h:i A" }}</div>
-                        </div>
-
-                        <div class="timeline-item" style="position: relative; padding-left: 3.5rem; padding-bottom: 2rem;">
-                            <div style="position: absolute; left: 0; top: 0; width: 33px; height: 33px; border-radius: 50%; background: {% if order.status != 'pending' %}linear-gradient(135deg, #27ae60 0%, #229954 100%){% else %}#e0e0e0{% endif %}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem; {% if order.status != 'pending' %}box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);{% endif %}">
-                                {% if order.status != 'pending' %}✓{% else %}2{% endif %}
-                            </div>
-                            <div style="font-weight: 600; margin-bottom: 0.3rem; color: {% if order.status != 'pending' %}#2c3e50{% else %}#95a5a6{% endif %}; font-size: 1rem;">Order Confirmed</div>
-                            <div style="font-size: 0.88rem; color: #7f8c8d;">
-                                {% if order.status != 'pending' %}{{ order.updated_at|date:"F d, Y h:i A" }}{% else %}Awaiting confirmation{% endif %}
-                            </div>
-                        </div>
-
-                        <div class="timeline-item" style="position: relative; padding-left: 3.5rem; padding-bottom: 2rem;">
-                            <div style="position: absolute; left: 0; top: 0; width: 33px; height: 33px; border-radius: 50%; background: {% if order.status in 'shipped,delivered' %}linear-gradient(135deg, #27ae60 0%, #229954 100%){% else %}#e0e0e0{% endif %}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem; {% if order.status in 'shipped,delivered' %}box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);{% endif %}">
-                                {% if order.status in 'shipped,delivered' %}✓{% else %}3{% endif %}
-                            </div>
-                            <div style="font-weight: 600; margin-bottom: 0.3rem; color: {% if order.status in 'shipped,delivered' %}#2c3e50{% else %}#95a5a6{% endif %}; font-size: 1rem;">Order Shipped</div>
-                            <div style="font-size: 0.88rem; color: #7f8c8d;">
-                                {% if order.status in 'shipped,delivered' %}In transit to delivery{% else %}Preparing for shipment{% endif %}
-                            </div>
-                        </div>
-
-                        <div class="timeline-item" style="position: relative; padding-left: 3.5rem;">
-                            <div style="position: absolute; left: 0; top: 0; width: 33px; height: 33px; border-radius: 50%; background: {% if order.status == 'delivered' %}linear-gradient(135deg, #27ae60 0%, #229954 100%){% else %}#e0e0e0{% endif %}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.9rem; {% if order.status == 'delivered' %}box-shadow: 0 2px 8px rgba(39, 174, 96, 0.3);{% endif %}">
-                                {% if order.status == 'delivered' %}✓{% else %}4{% endif %}
-                            </div>
-                            <div style="font-weight: 600; margin-bottom: 0.3rem; color: {% if order.status == 'delivered' %}#2c3e50{% else %}#95a5a6{% endif %}; font-size: 1rem;">Order Delivered</div>
-                            <div style="font-size: 0.88rem; color: #7f8c8d;">
-                                {% if order.status == 'delivered' %}Successfully delivered{% else %}Estimated delivery: 1-2 business days{% endif %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Order Items -->
-        <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-header" style="background: linear-gradient(135deg, #2c5f2d 0%, #27ae60 100%); color: white; padding: 1.2rem 1.5rem; border-radius: 8px 8px 0 0;">
-                <h3 style="margin: 0; display: flex; align-items: center; gap: 0.7rem; font-size: 1.2rem;">
-                    <span style="font-size: 1.4rem;">🛍️</span> 
-                    Order Items ({{ order.items.count }})
-                </h3>
-            </div>
-            <div class="card-body" style="padding: 0;">
-                {% for item in order.items.all %}
-                <div style="display: flex; gap: 1.5rem; padding: 1.5rem; border-bottom: 1px solid #e9ecef; {% if forloop.last %}border-bottom: none;{% endif %} transition: background 0.3s ease;" 
-                     onmouseover="this.style.background='#f8f9fa'" 
-                     onmouseout="this.style.background='white'">
-                    
-                    <!-- Product Image -->
-                    <div style="width: 100px; height: 100px; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); flex-shrink: 0; background: #f8f9fa;">
-                        {% if item.product.image %}
-                            <img src="{{ item.product.image.url }}" 
-                                 alt="{{ item.product.name }}" 
-                                 style="width: 100%; height: 100%; object-fit: cover;">
-                        {% else %}
-                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #dee2e6;">
-                                🥛
-                            </div>
-                        {% endif %}
-                    </div>
-                    
-                    <!-- Product Details -->
-                    <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
-                        <div>
-                            <h4 style="margin-bottom: 0.5rem; color: #2c3e50; font-size: 1.15rem; font-weight: 600;">
-                                {{ item.product.name|default:"Product" }}
-                            </h4>
-                            {% if item.product.description %}
-                            <p style="color: #7f8c8d; font-size: 0.88rem; margin-bottom: 0.5rem; line-height: 1.4;">
-                                {{ item.product.description|truncatewords:15 }}
-                            </p>
-                            {% endif %}
-                            <div style="display: inline-block; padding: 0.3rem 0.8rem; background: #e8f5e9; color: #2c5f2d; border-radius: 15px; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.8rem;">
-                                Quantity: {{ item.quantity }}
-                            </div>
-                        </div>
-                        
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                            <div style="display: flex; align-items: center; gap: 0.5rem; color: #7f8c8d; font-size: 0.95rem;">
-                                <span>₹{{ item.price }}</span>
-                                <span>×</span>
-                                <span>{{ item.quantity }}</span>
-                            </div>
-                            <div style="font-weight: 700; color: #2c5f2d; font-size: 1.4rem;">
-                                ₹{{ item.subtotal }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- Shipping Address -->
-        <div class="card" style="box-shadow: 0 2px 12px rgba(0,0,0,0.08);">
-            <div class="card-header" style="background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white; padding: 1.2rem 1.5rem; border-radius: 8px 8px 0 0;">
-                <h3 style="margin: 0; display: flex; align-items: center; gap: 0.7rem; font-size: 1.2rem;">
-                    <span style="font-size: 1.4rem;">📍</span> 
-                    Shipping Address
-                </h3>
-            </div>
-            <div class="card-body" style="padding: 1.5rem;">
-                <div style="line-height: 1.9;">
-                    <div style="font-weight: 600; margin-bottom: 0.8rem; color: #2c3e50; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.3rem;">👤</span>
-                        {{ order.customer.get_full_name }}
-                    </div>
-                    <div style="color: #555; padding-left: 2rem; margin-bottom: 0.5rem;">
-                        {{ order.shipping_address|linebreaksbr }}
-                    </div>
-                    <div style="color: #2c5f2d; margin-top: 0.8rem; font-weight: 600; padding-left: 2rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.1rem;">📞</span>
-                        {{ order.phone }}
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Order Summary Sidebar -->
-    <div>
-        <div class="cart-summary" style="position: sticky; top: 20px;">
-            <h3 style="margin-bottom: 1.5rem; color: #2c5f2d; font-size: 1.3rem; border-bottom: 2px solid #e9ecef; padding-bottom: 0.8rem;">
-                Order Summary
-            </h3>
-            
-            <div class="cart-summary-row" style="padding: 0.8rem 0;">
-                <span style="color: #555;">Subtotal</span>
-                <span style="font-weight: 600;">₹{{ order.total_amount }}</span>
-            </div>
-            
-            <div class="cart-summary-row" style="padding: 0.8rem 0;">
-                <span style="color: #555;">Delivery Charges</span>
-                <span style="font-weight: 600; color: #27ae60;">FREE</span>
-            </div>
-            
-            <div class="cart-summary-row" style="padding: 0.8rem 0;">
-                <span style="color: #555;">GST (5%)</span>
-                <span style="font-weight: 600;">₹{{ order.gst_amount }}</span>
-            </div>
-            
-            <div class="cart-summary-row total" style="margin-top: 1rem; padding-top: 1.5rem; border-top: 2px solid #2c5f2d;">
-                <span style="font-size: 1.2rem; font-weight: 700;">Total Amount</span>
-                <span style="font-size: 1.5rem; font-weight: 700; color: #2c5f2d;">₹{{ order.total_with_gst }}</span>
-            </div>
-
-            <div style="margin-top: 1.5rem; padding: 1.2rem; background: #f8f9fa; border-radius: 8px;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.8rem; align-items: center;">
-                    <span style="color: #666; font-size: 0.95rem;">Payment Method:</span>
-                    <span style="font-weight: 600; color: #2c3e50; text-transform: capitalize;">{{ order.payment_method }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="color: #666; font-size: 0.95rem;">Payment Status:</span>
-                    <span class="badge {% if order.payment_status == 'completed' %}badge-success{% else %}badge-warning{% endif %}" 
-                          style="padding: 0.4rem 0.9rem; border-radius: 12px; font-size: 0.85rem; font-weight: 600;">
-                        {{ order.payment_status|title }}
-                    </span>
-                </div>
-            </div>
-
-            {% if order.notes %}
-            <div style="margin-top: 1.5rem; padding: 1.2rem; background: linear-gradient(135deg, #fff3cd 0%, #ffe8a1 100%); border-radius: 10px; border-left: 4px solid #ffc107;">
-                <strong style="color: #856404; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; font-size: 1rem;">
-                    <span style="font-size: 1.2rem;">📝</span> 
-                    Special Instructions
-                </strong>
-                <p style="margin: 0; color: #856404; font-size: 0.92rem; line-height: 1.6;">{{ order.notes }}</p>
-            </div>
-            {% endif %}
-        </div>
-
-        {% if order.status in 'pending,confirmed' %}
-        <div class="card" style="margin-top: 1.5rem;">
-            <div class="card-body" style="padding: 1.2rem;">
-                <h4 style="margin-bottom: 1.2rem; color: #2c3e50; font-size: 1.1rem;">Need Help?</h4>
-                <form method="post" action="{% url 'cancel_order' order.id %}" onsubmit="return confirm('Are you sure you want to cancel this order?')">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-block" style="width: 100%; padding: 0.8rem; font-weight: 600; border-radius: 8px; margin-bottom: 0.7rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                        <span>❌</span> Cancel Order
-                    </button>
-                </form>
-                <a href="#" class="btn btn-outline btn-block" style="width: 100%; padding: 0.8rem; font-weight: 600; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
-                    <span>💬</span> Contact Support
-                </a>
-            </div>
-        </div>
-        {% endif %}
-
-        <div class="card" style="margin-top: 1.5rem;">
-            <div class="card-body" style="padding: 1.2rem;">
-                <a href="{% url 'order_list' %}" class="btn btn-outline btn-block" style="width: 100%; padding: 0.8rem; font-weight: 600; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 0.7rem;">
-                    <span>←</span> Back to Orders
-                </a>
-                <a href="{% url 'product_list' %}" class="btn btn-block" style="width: 100%; padding: 0.8rem; font-weight: 600; border-radius: 8px; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.5rem; background: linear-gradient(135deg, #2c5f2d 0%, #27ae60 100%); color: white;">
-                    <span>🛍️</span> Continue Shopping
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
+{% block extra_css %}
 <style>
-    /* Order Status Badges */
-    .order-status {
-        display: inline-block;
+    /* Modern, cleaner styling */
+    .order-header-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid #f0f0f0;
+    }
+    
+    .order-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .order-meta {
+        color: #666;
+        font-size: 0.95rem;
+    }
+
+    .status-badge {
+        padding: 0.4rem 1rem;
+        border-radius: 50px;
         font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
     }
     
-    .order-status.pending {
-        background: #fff3cd;
-        color: #856404;
+    .status-badge.pending { background: #fff8e1; color: #f57f17; }
+    .status-badge.confirmed { background: #e3f2fd; color: #1565c0; }
+    .status-badge.shipped { background: #e8f5e9; color: #2e7d32; }
+    .status-badge.delivered { background: #d4edda; color: #155724; }
+    .status-badge.cancelled { background: #ffebee; color: #c62828; }
+
+    /* Timeline */
+    .timeline-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        border: 1px solid #f0f0f0;
     }
     
-    .order-status.confirmed {
-        background: #d1ecf1;
-        color: #0c5460;
+    .timeline {
+        position: relative;
+        padding: 1rem 0;
     }
     
-    .order-status.shipped {
-        background: #d4edda;
-        color: #155724;
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 20px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #f0f0f0;
     }
     
-    .order-status.delivered {
-        background: #d4edda;
-        color: #155724;
+    .timeline-item {
+        position: relative;
+        padding-left: 3.5rem;
+        padding-bottom: 2.5rem;
     }
     
-    .order-status.cancelled {
-        background: #f8d7da;
-        color: #721c24;
+    .timeline-item:last-child {
+        padding-bottom: 0;
     }
     
-    /* Responsive Design */
-    @media (max-width: 968px) {
-        div[style*="grid-template-columns: 2fr 1fr"] {
-            grid-template-columns: 1fr !important;
-        }
-        
-        .cart-summary {
-            position: static !important;
-        }
-    }
-    
-    @media (max-width: 600px) {
-        div[style*="display: flex"][style*="gap: 1.5rem"] {
-            flex-direction: column !important;
-        }
-        
-        div[style*="width: 100px; height: 100px"] {
-            width: 100% !important;
-            height: 200px !important;
-        }
-    }
-    
-    /* Hover Effects */
-    .btn-block:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    .timeline-marker {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: white;
+        border: 2px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
         transition: all 0.3s ease;
     }
     
-    .card {
-        transition: box-shadow 0.3s ease;
+    .timeline-item.active .timeline-marker {
+        border-color: #2c5f2d;
+        background: #2c5f2d;
+        color: white;
+        box-shadow: 0 4px 10px rgba(44, 95, 45, 0.3);
     }
     
-    .card:hover {
-        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    .timeline-item.completed .timeline-marker {
+        border-color: #2c5f2d;
+        background: #2c5f2d;
+        color: white;
+    }
+    
+    .timeline-content h4 {
+        margin: 0 0 0.3rem 0;
+        font-size: 1.05rem;
+        color: #333;
+    }
+    
+    .timeline-content p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #666;
+    }
+
+    /* Items List */
+    .items-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        overflow: hidden;
+        border: 1px solid #f0f0f0;
+        margin-bottom: 2rem;
+    }
+    
+    .card-header-clean {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .card-header-clean h3 {
+        margin: 0;
+        font-size: 1.2rem;
+        color: #1a1a1a;
+    }
+    
+    .order-item {
+        display: flex;
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #f0f0f0;
+        align-items: center;
+        gap: 1.5rem;
+    }
+    
+    .order-item:last-child {
+        border-bottom: none;
+    }
+    
+    .item-image {
+        width: 80px;
+        height: 80px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #f9f9f9;
+        border: 1px solid #f0f0f0;
+        flex-shrink: 0;
+    }
+    
+    .item-details {
+        flex: 1;
+    }
+    
+    .item-name {
+        font-weight: 600;
+        color: #333;
+        font-size: 1.1rem;
+        margin-bottom: 0.3rem;
+        display: block;
+        text-decoration: none;
+    }
+    
+    .item-meta {
+        color: #666;
+        font-size: 0.9rem;
+    }
+    
+    .item-price {
+        font-weight: 700;
+        color: #1a1a1a;
+        font-size: 1.1rem;
+        text-align: right;
+        min-width: 80px;
+    }
+
+    /* Address Card */
+    .address-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        padding: 2rem;
+        border: 1px solid #f0f0f0;
+    }
+    
+    .address-title {
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #666;
+        margin-bottom: 1rem;
+        font-weight: 600;
+    }
+
+    /* Summary Sidebar */
+    .summary-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+        padding: 2rem;
+        border: 1px solid #f0f0f0;
+        position: sticky;
+        top: 2rem;
+    }
+    
+    .summary-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1rem;
+        color: #555;
+    }
+    
+    .summary-row.total {
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 2px dashed #e0e0e0;
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: #1a1a1a;
+    }
+    
+    .payment-info {
+        margin-top: 2rem;
+        padding: 1.2rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+
+    .btn-pay-now {
+        background: #2c5f2d;
+        color: white;
+        width: 100%;
+        padding: 1rem;
+        border-radius: 8px;
+        font-weight: 600;
+        margin-top: 1.5rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        text-decoration: none;
+    }
+    
+    .btn-pay-now:hover {
+        background: #1e4620;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(44, 95, 45, 0.2);
+    }
+
+    .action-links {
+        display: grid;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+    
+    .btn-outline-danger {
+        color: #dc3545;
+        border: 1px solid #dc3545;
+        background: transparent;
+        padding: 0.8rem;
+        border-radius: 8px;
+        width: 100%;
+        cursor: pointer;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all 0.2s;
+    }
+    
+    .btn-outline-danger:hover {
+        background: #dc3545;
+        color: white;
+    }
+
+    @media (max-width: 991px) {
+        .order-layout {
+            grid-template-columns: 1fr !important;
+        }
+        
+        .summary-card {
+            position: static;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .order-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+            position: relative;
+        }
+        
+        .item-image {
+            width: 70px;
+            height: 70px;
+        }
+        
+        .item-price {
+            text-align: left;
+            margin-top: 0.5rem;
+            color: #2c5f2d;
+        }
+        
+        .card-header-clean {
+            padding: 1rem 1.5rem;
+        }
+        
+        .order-item {
+            padding: 1rem 1.5rem;
+        }
+        
+        .order-header-card, .timeline-card, .items-card, .address-card, .summary-card {
+            padding: 1.5rem;
+        }
     }
 </style>
 {% endblock %}
 
-
-{% comment %} {% extends 'shop/base.html' %}
-{% load static %}
-
-{% block title %}Order #{{ order.order_number }} - Pavan Diary{% endblock %}
-
 {% block content %}
-<div class="breadcrumb">
+<div class="breadcrumb mb-4">
     <a href="{% url 'home' %}">Home</a>
     <span>›</span>
     <a href="{% url 'order_list' %}">My Orders</a>
@@ -331,72 +351,107 @@
     <span>Order #{{ order.order_number }}</span>
 </div>
 
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
-    <!-- Order Details -->
+<div class="order-layout" style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Main Content -->
     <div>
         <!-- Order Header -->
-        <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-body">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
-                    <div>
-                        <h1 style="margin-bottom: 0.5rem;">Order #{{ order.order_number }}</h1>
-                        <p style="color: #666;">Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"h:i A" }}</p>
+        <div class="order-header-card">
+            <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+                <div>
+                    <h1 class="order-title">
+                        Order #{{ order.order_number }}
+                    </h1>
+                    <p class="order-meta mb-0">
+                        Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"h:i A" }}
+                    </p>
+                </div>
+                <span class="status-badge {{ order.status }}">
+                    {{ order.get_status_display }}
+                </span>
+            </div>
+            
+            {% if order.status == 'delivered' %}
+            <div class="mt-3 pt-3 border-top" style="border-color: #f0f0f0 !important;">
+                <p class="mb-0 text-success fw-bold">
+                    <i class="fas fa-check-circle me-2"></i> This order was delivered on {{ order.updated_at|date:"F d, Y" }}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Timeline -->
+        <div class="timeline-card">
+            <h3 class="mb-4 fs-5 fw-bold text-dark">Tracking History</h3>
+            <div class="timeline">
+                <!-- Placed -->
+                <div class="timeline-item active completed">
+                    <div class="timeline-marker">
+                        <i class="fas fa-check"></i>
                     </div>
-                    <span class="order-status {{ order.status }}">{{ order.get_status_display }}</span>
+                    <div class="timeline-content">
+                        <h4>Order Placed</h4>
+                        <p>{{ order.created_at|date:"F d, Y h:i A" }}</p>
+                    </div>
                 </div>
 
-                <!-- Order Timeline -->
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
-                    <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">📍 Order Status</h3>
-                    <div style="position: relative;">
-                        <div style="position: absolute; left: 15px; top: 30px; bottom: 30px; width: 2px; background: #e0e0e0;"></div>
-                        
-                        <div class="timeline-item" style="position: relative; padding-left: 3rem; padding-bottom: 2rem;">
-                            <div style="position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: #27ae60; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">✓</div>
-                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Order Placed</div>
-                            <div style="font-size: 0.85rem; color: #666;">{{ order.created_at|date:"F d, Y h:i A" }}</div>
-                        </div>
+                <!-- Confirmed -->
+                <div class="timeline-item {% if order.status != 'pending' %}active completed{% endif %}">
+                    <div class="timeline-marker">
+                        {% if order.status != 'pending' %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-clipboard-check text-muted"></i>{% endif %}
+                    </div>
+                    <div class="timeline-content">
+                        <h4>Order Confirmed</h4>
+                        <p>{% if order.status != 'pending' %}We've received your order{% else %}Awaiting confirmation{% endif %}</p>
+                    </div>
+                </div>
 
-                        <div class="timeline-item" style="position: relative; padding-left: 3rem; padding-bottom: 2rem;">
-                            <div style="position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: {% if order.status != 'pending' %}#27ae60{% else %}#e0e0e0{% endif %}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{% if order.status != 'pending' %}✓{% else %}2{% endif %}</div>
-                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Order Confirmed</div>
-                            <div style="font-size: 0.85rem; color: #666;">{% if order.status != 'pending' %}{{ order.updated_at|date:"F d, Y h:i A" }}{% else %}Pending{% endif %}</div>
-                        </div>
+                <!-- Shipped -->
+                <div class="timeline-item {% if order.status in 'shipped,delivered' %}active completed{% endif %}">
+                    <div class="timeline-marker">
+                        {% if order.status in 'shipped,delivered' %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-truck text-muted"></i>{% endif %}
+                    </div>
+                    <div class="timeline-content">
+                        <h4>Out for Delivery</h4>
+                        <p>{% if order.status in 'shipped,delivered' %}Your order is on the way{% else %}We'll notify you when shipped{% endif %}</p>
+                    </div>
+                </div>
 
-                        <div class="timeline-item" style="position: relative; padding-left: 3rem; padding-bottom: 2rem;">
-                            <div style="position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: {% if order.status in 'shipped,delivered' %}#27ae60{% else %}#e0e0e0{% endif %}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{% if order.status in 'shipped,delivered' %}✓{% else %}3{% endif %}</div>
-                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Order Shipped</div>
-                            <div style="font-size: 0.85rem; color: #666;">{% if order.status in 'shipped,delivered' %}In Transit{% else %}Not yet shipped{% endif %}</div>
-                        </div>
-
-                        <div class="timeline-item" style="position: relative; padding-left: 3rem;">
-                            <div style="position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: {% if order.status == 'delivered' %}#27ae60{% else %}#e0e0e0{% endif %}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{% if order.status == 'delivered' %}✓{% else %}4{% endif %}</div>
-                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Order Delivered</div>
-                            <div style="font-size: 0.85rem; color: #666;">{% if order.status == 'delivered' %}Delivered successfully{% else %}Estimated delivery in 1-2 days{% endif %}</div>
-                        </div>
+                <!-- Delivered -->
+                <div class="timeline-item {% if order.status == 'delivered' %}active completed{% endif %}">
+                    <div class="timeline-marker">
+                        {% if order.status == 'delivered' %}<i class="fas fa-check"></i>{% else %}<i class="fas fa-box-open text-muted"></i>{% endif %}
+                    </div>
+                    <div class="timeline-content">
+                        <h4>Delivered</h4>
+                        <p>{% if order.status == 'delivered' %}Enjoy your products!{% else %}{% endif %}</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Order Items -->
-        <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-header">
-                <h3 style="margin: 0;">🛍️ Order Items ({{ order.items.count }})</h3>
+        <!-- Items -->
+        <div class="items-card">
+            <div class="card-header-clean">
+                <h3>Items in Your Order</h3>
+                <span class="badge bg-light text-dark">{{ order.items.count }} items</span>
             </div>
-            <div class="card-body">
+            <div>
                 {% for item in order.items.all %}
-                <div style="display: flex; gap: 1.5rem; padding: 1.5rem; border-bottom: 1px solid #e0e0e0; {% if forloop.last %}border-bottom: none;{% endif %}">
-                    <div style="width: 80px; height: 80px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
-                        
-                    </div>
-                    <div style="flex: 1;">
-                        <h4 style="margin-bottom: 0.5rem;">{{ item.product.name|default:"Product" }}</h4>
-                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">Quantity: {{ item.quantity }}</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-weight: 600; color: #2c5f2d; font-size: 1.2rem;">₹{{ item.price }} × {{ item.quantity }}</span>
-                            <span style="font-weight: 700; color: #2c5f2d; font-size: 1.3rem;">₹{{ item.subtotal }}</span>
+                <div class="order-item">
+                    {% if item.product.primary_image %}
+                        <img src="{{ item.product.primary_image }}" alt="{{ item.product.name }}" class="item-image">
+                    {% else %}
+                        <div class="item-image d-flex align-items-center justify-content-center text-muted h-100 fs-4">🥛</div>
+                    {% endif %}
+                    
+                    <div class="item-details">
+                        <a href="#" class="item-name">{{ item.product.name }}</a>
+                        <div class="item-meta">
+                            Qty: {{ item.quantity }} × ₹{{ item.price }}
                         </div>
+                    </div>
+                    <div class="item-price">
+                        ₹{{ item.subtotal }}
                     </div>
                 </div>
                 {% endfor %}
@@ -404,269 +459,97 @@
         </div>
 
         <!-- Shipping Address -->
-        <div class="card">
-            <div class="card-header">
-                <h3 style="margin: 0;">📍 Shipping Address</h3>
-            </div>
-            <div class="card-body">
-                <div style="line-height: 1.8;">
-                    <div style="font-weight: 600; margin-bottom: 0.5rem;">{{ order.customer.get_full_name }}</div>
-                    <div style="color: #666;">{{ order.shipping_address|linebreaksbr }}</div>
-                    <div style="color: #666; margin-top: 0.5rem;">📞 {{ order.phone }}</div>
+        <div class="address-card">
+            <div class="address-title">Shipping To</div>
+            <div class="d-flex align-items-start gap-3">
+                <div class="bg-light p-3 rounded-circle text-muted">
+                    <i class="fas fa-map-marker-alt fs-5"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold fs-6 mb-1">{{ order.customer.get_full_name }}</h5>
+                    <p class="mb-1 text-secondary" style="line-height: 1.6;">{{ order.shipping_address }}</p>
+                    <p class="mb-0 text-dark fw-medium">
+                        <i class="fas fa-phone-alt me-2 text-muted small"></i>{{ order.phone }}
+                    </p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Order Summary Sidebar -->
+    <!-- Sidebar -->
     <div>
-        <div class="cart-summary">
-            <h3>Order Summary</h3>
+        <div class="summary-card">
+            <h3 class="fs-5 fw-bold mb-4">Payment Summary</h3>
             
-            <div class="cart-summary-row">
+            <div class="summary-row">
                 <span>Subtotal</span>
                 <span>₹{{ order.total_amount }}</span>
             </div>
-            
-            <div class="cart-summary-row">
-                <span>Delivery Charges</span>
-                <span>FREE</span>
+            <div class="summary-row">
+                <span>Shipping</span>
+                <span class="text-success">Free</span>
             </div>
+           <!--  <div class="summary-row">
+                <span>Tax</span>
+                <span>₹0.00</span>
+            </div> -->
             
-            <div class="cart-summary-row">
-                <span>GST (5%)</span>
-                <span>₹{{ order.gst_amount }}</span>
-            </div>
-            
-            <div class="cart-summary-row total">
-                <span>Total Amount</span>
-                <span>₹{{ order.total_with_gst }}</span>
+            <div class="summary-row total">
+                <span>Total</span>
+                <span>₹{{ order.total_amount }}</span>
             </div>
 
-            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid #e0e0e0;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <span style="color: #666;">Payment Method:</span>
-                    <span style="font-weight: 600;">{{ order.payment_method }}</span>
+            <!-- Payment Status Box -->
+            <div class="payment-info">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="text-secondary small">Method</span>
+                    <span class="fw-medium text-dark">{{ order.payment_method }}</span>
                 </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span style="color: #666;">Payment Status:</span>
-                    <span class="badge {% if order.payment_status == 'completed' %}badge-success{% else %}badge-warning{% endif %}">
-                        {{ order.payment_status|title }}
-                    </span>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="text-secondary small">Status</span>
+                    {% if order.payment_status == 'completed' %}
+                        <span class="badge bg-success text-white">Paid</span>
+                    {% elif order.payment_status == 'pending' %}
+                        <span class="badge bg-warning text-dark">Pending</span>
+                    {% else %}
+                        <span class="badge bg-danger text-white">{{ order.payment_status|title }}</span>
+                    {% endif %}
                 </div>
+                
+                <!-- Pay Now Button if Pending and Online Payment -->
+                {% if order.payment_status == 'pending' or order.payment_status == 'failed' %}
+                    {% if order.payment_method != 'COD' %}
+                        <a href="{% url 'payment_process' order.id %}" class="btn-pay-now">
+                            <i class="fas fa-lock"></i> Pay Now
+                        </a>
+                        <p class="text-center mt-2 small text-muted">Complete your payment securely</p>
+                    {% endif %}
+                {% endif %}
             </div>
 
             {% if order.notes %}
-            <div style="margin-top: 1.5rem; padding: 1rem; background: #fff3cd; border-radius: 8px;">
-                <strong style="color: #856404;">📝 Special Instructions:</strong>
-                <p style="margin: 0.5rem 0 0; color: #856404; font-size: 0.9rem;">{{ order.notes }}</p>
+            <div class="mt-4 p-3 bg-light rounded border">
+                <small class="text-uppercase text-secondary fw-bold mb-1 d-block" style="font-size: 0.75rem;">Order Notes</small>
+                <p class="mb-0 small text-dark">{{ order.notes }}</p>
             </div>
             {% endif %}
-        </div>
 
-        {% if order.status in 'pending,confirmed' %}
-        <div class="card" style="margin-top: 1rem;">
-            <div class="card-body">
-                <h4 style="margin-bottom: 1rem;">Need Help?</h4>
+            <!-- Actions -->
+            <div class="action-links">
+                {% if order.status in 'pending,confirmed' %}
                 <form method="post" action="{% url 'cancel_order' order.id %}" onsubmit="return confirm('Are you sure you want to cancel this order?')">
                     {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-block">
-                        ❌ Cancel Order
+                    <button type="submit" class="btn-outline-danger">
+                        <i class="fas fa-times"></i> Cancel Order
                     </button>
                 </form>
-                <a href="#" class="btn btn-outline btn-block" style="margin-top: 0.5rem;">
-                    💬 Contact Support
-                </a>
-            </div>
-        </div>
-        {% endif %}
-
-        <div class="card" style="margin-top: 1rem;">
-            <div class="card-body">
-                <a href="{% url 'order_list' %}" class="btn btn-outline btn-block">
-                    ← Back to Orders
-                </a>
-                <a href="{% url 'product_list' %}" class="btn btn-block" style="margin-top: 0.5rem;">
-                    🛍️ Continue Shopping
+                {% endif %}
+                
+                <a href="{% url 'order_list' %}" class="text-center text-decoration-none text-muted small">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Orders
                 </a>
             </div>
         </div>
     </div>
 </div>
-{% endblock %} {% endcomment %}
-
-
-{% comment %} {% extends 'shop/base.html' %}
-{% load static %}
-
-{% block title %}Order #{{ order.order_number }} - Pavan Diary{% endblock %}
-
-{% block content %}
-<div class="breadcrumb">
-    <a href="{% url 'home' %}">Home</a>
-    <span>›</span>
-    <a href="{% url 'order_list' %}">My Orders</a>
-    <span>›</span>
-    <span>Order #{{ order.order_number }}</span>
-</div>
-
-<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
-    <!-- Order Details -->
-    <div>
-        <!-- Order Header -->
-        <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-body">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
-                    <div>
-                        <h1 style="margin-bottom: 0.5rem;">Order #{{ order.order_number }}</h1>
-                        <p style="color: #666;">Placed on {{ order.created_at|date:"F d, Y" }} at {{ order.created_at|time:"h:i A" }}</p>
-                    </div>
-                    <span class="order-status {{ order.status }}">{{ order.get_status_display }}</span>
-                </div>
-
-                <!-- Order Timeline -->
-                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
-                    <h3 style="margin-bottom: 1rem; font-size: 1.1rem;">📍 Order Status</h3>
-                    <div style="position: relative;">
-                        <div style="position: absolute; left: 15px; top: 30px; bottom: 30px; width: 2px; background: #e0e0e0;"></div>
-                        
-                        <div class="timeline-item" style="position: relative; padding-left: 3rem; padding-bottom: 2rem;">
-                            <div style="position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: #27ae60; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">✓</div>
-                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Order Placed</div>
-                            <div style="font-size: 0.85rem; color: #666;">{{ order.created_at|date:"F d, Y h:i A" }}</div>
-                        </div>
-
-                        <div class="timeline-item" style="position: relative; padding-left: 3rem; padding-bottom: 2rem;">
-                            <div style="position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: {% if order.status != 'pending' %}#27ae60{% else %}#e0e0e0{% endif %}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{% if order.status != 'pending' %}✓{% else %}2{% endif %}</div>
-                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Order Confirmed</div>
-                            <div style="font-size: 0.85rem; color: #666;">{% if order.status != 'pending' %}{{ order.updated_at|date:"F d, Y h:i A" }}{% else %}Pending{% endif %}</div>
-                        </div>
-
-                        <div class="timeline-item" style="position: relative; padding-left: 3rem; padding-bottom: 2rem;">
-                            <div style="position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: {% if order.status in 'shipped,delivered' %}#27ae60{% else %}#e0e0e0{% endif %}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{% if order.status in 'shipped,delivered' %}✓{% else %}3{% endif %}</div>
-                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Order Shipped</div>
-                            <div style="font-size: 0.85rem; color: #666;">{% if order.status in 'shipped,delivered' %}In Transit{% else %}Not yet shipped{% endif %}</div>
-                        </div>
-
-                        <div class="timeline-item" style="position: relative; padding-left: 3rem;">
-                            <div style="position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%; background: {% if order.status == 'delivered' %}#27ae60{% else %}#e0e0e0{% endif %}; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">{% if order.status == 'delivered' %}✓{% else %}4{% endif %}</div>
-                            <div style="font-weight: 600; margin-bottom: 0.25rem;">Order Delivered</div>
-                            <div style="font-size: 0.85rem; color: #666;">{% if order.status == 'delivered' %}Delivered successfully{% else %}Estimated delivery in 1-2 days{% endif %}</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Order Items -->
-        <div class="card" style="margin-bottom: 2rem;">
-            <div class="card-header">
-                <h3 style="margin: 0;">🛍️ Order Items ({{ order.items.count }})</h3>
-            </div>
-            <div class="card-body">
-                {% for item in order.items.all %}
-                <div style="display: flex; gap: 1.5rem; padding: 1.5rem; border-bottom: 1px solid #e0e0e0; {% if forloop.last %}border-bottom: none;{% endif %}">
-                    <div style="width: 80px; height: 80px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 2.5rem;">
-                        🥛
-                    </div>
-                    <div style="flex: 1;">
-                        <h4 style="margin-bottom: 0.5rem;">{{ item.product.name|default:"Product" }}</h4>
-                        <p style="color: #666; font-size: 0.9rem; margin-bottom: 0.5rem;">Quantity: {{ item.quantity }}</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span style="font-weight: 600; color: #2c5f2d; font-size: 1.2rem;">₹{{ item.price }} × {{ item.quantity }}</span>
-                            <span style="font-weight: 700; color: #2c5f2d; font-size: 1.3rem;">₹{{ item.subtotal }}</span>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- Shipping Address -->
-        <div class="card">
-            <div class="card-header">
-                <h3 style="margin: 0;">📍 Shipping Address</h3>
-            </div>
-            <div class="card-body">
-                <div style="line-height: 1.8;">
-                    <div style="font-weight: 600; margin-bottom: 0.5rem;">{{ order.customer.get_full_name }}</div>
-                    <div style="color: #666;">{{ order.shipping_address|linebreaksbr }}</div>
-                    <div style="color: #666; margin-top: 0.5rem;">📞 {{ order.phone }}</div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Order Summary Sidebar -->
-    <div>
-        <div class="cart-summary">
-            <h3>Order Summary</h3>
-            
-            <div class="cart-summary-row">
-                <span>Subtotal</span>
-                <span>₹{{ order.total_amount }}</span>
-            </div>
-            
-            <div class="cart-summary-row">
-                <span>Delivery Charges</span>
-                <span>FREE</span>
-            </div>
-            
-            <div class="cart-summary-row">
-                <span>GST (5%)</span>
-                <span>₹{{ order.total_amount|floatformat:0|mul:"0.05"|floatformat:0 }}</span>
-            </div>
-            
-            <div class="cart-summary-row total">
-                <span>Total Amount</span>
-                <span>₹{{ order.total_amount|floatformat:0|add:"0"|mul:"1.05"|floatformat:0 }}</span>
-            </div>
-
-            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid #e0e0e0;">
-                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
-                    <span style="color: #666;">Payment Method:</span>
-                    <span style="font-weight: 600;">{{ order.payment_method }}</span>
-                </div>
-                <div style="display: flex; justify-content: space-between;">
-                    <span style="color: #666;">Payment Status:</span>
-                    <span class="badge {% if order.payment_status == 'completed' %}badge-success{% else %}badge-warning{% endif %}">
-                        {{ order.payment_status|title }}
-                    </span>
-                </div>
-            </div>
-
-            {% if order.notes %}
-            <div style="margin-top: 1.5rem; padding: 1rem; background: #fff3cd; border-radius: 8px;">
-                <strong style="color: #856404;">📝 Special Instructions:</strong>
-                <p style="margin: 0.5rem 0 0; color: #856404; font-size: 0.9rem;">{{ order.notes }}</p>
-            </div>
-            {% endif %}
-        </div>
-
-        {% if order.status in 'pending,confirmed' %}
-        <div class="card" style="margin-top: 1rem;">
-            <div class="card-body">
-                <h4 style="margin-bottom: 1rem;">Need Help?</h4>
-                <button class="btn btn-danger btn-block" onclick="return confirm('Are you sure you want to cancel this order?')">
-                    ❌ Cancel Order
-                </button>
-                <a href="#" class="btn btn-outline btn-block" style="margin-top: 0.5rem;">
-                    💬 Contact Support
-                </a>
-            </div>
-        </div>
-        {% endif %}
-
-        <div class="card" style="margin-top: 1rem;">
-            <div class="card-body">
-                <a href="{% url 'order_list' %}" class="btn btn-outline btn-block">
-                    ← Back to Orders
-                </a>
-                <a href="{% url 'product_list' %}" class="btn btn-block" style="margin-top: 0.5rem;">
-                    🛍️ Continue Shopping
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %} {% endcomment %}
+{% endblock %}

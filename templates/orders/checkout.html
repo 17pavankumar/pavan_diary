@@ -23,6 +23,9 @@
             <div class="card">
                 <div class="card-header">
                     <h3>📍 Delivery Information</h3>
+                    <button type="button" class="btn-detect-location" id="detectLocationBtn" onclick="detectLocation()">
+                        <i class="fas fa-map-marker-alt"></i> Auto Detect
+                    </button>
                 </div>
                 <div class="card-body">
                     <div class="form-group">
@@ -37,24 +40,29 @@
 
                     <div class="form-group">
                         <label>Delivery Address <span>*</span></label>
-                        <textarea name="address" rows="4" required placeholder="House/Flat No., Street, Landmark">{{ user.address }}</textarea>
+                        <textarea name="address" id="addressField" rows="3" required placeholder="House/Flat No., Street, Landmark">{{ user.address }}</textarea>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label>City <span>*</span></label>
-                            <input type="text" name="city" required placeholder="City">
+                            <input type="text" name="city" id="cityField" required value="{{ user.city|default:'' }}" placeholder="City">
                         </div>
 
                         <div class="form-group">
-                            <label>State (Optional)</label>
-                            <input type="text" name="state" placeholder="State">
+                            <label>State <span>*</span></label>
+                            <input type="text" name="state" id="stateField" required value="{{ user.state|default:'' }}" placeholder="State">
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label>PIN Code <span>*</span></label>
-                        <input type="text" name="pincode" required placeholder="577201">
+                        <input type="text" name="pincode" id="pincodeField" required value="{{ user.pincode|default:'' }}" placeholder="577201">
+                    </div>
+
+                    <div class="form-check" style="margin-top: 1rem;">
+                        <input type="checkbox" name="save_address" id="saveAddress" checked>
+                        <label for="saveAddress">Save this address for future orders</label>
                     </div>
 
                     <div class="form-group">
@@ -154,4 +162,106 @@
         </div>
     </div>
 </div>
+
+<script>
+    function detectLocation() {
+        const btn = document.getElementById('detectLocationBtn');
+        const originalText = btn.innerHTML;
+        
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by your browser");
+            return;
+        }
+
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Locating...';
+        btn.disabled = true;
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                
+                // Use OpenStreetMap Nominatim API for reverse geocoding (free, no key required)
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const address = data.address;
+                        
+                        if (address) {
+                            // Map OSM fields to our fields
+                            document.getElementById('cityField').value = address.city || address.town || address.village || '';
+                            document.getElementById('stateField').value = address.state || '';
+                            document.getElementById('pincodeField').value = address.postcode || '';
+                            
+                            // Construct street address
+                            let streetComponents = [];
+                            if (address.house_number) streetComponents.push(address.house_number);
+                            if (address.road) streetComponents.push(address.road);
+                            if (address.suburb) streetComponents.push(address.suburb);
+                            
+                            if (streetComponents.length > 0) {
+                                document.getElementById('addressField').value = streetComponents.join(', ');
+                            }
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert("Could not fetch address details.");
+                    })
+                    .finally(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled = false;
+                    });
+            },
+            (error) => {
+                console.error(error);
+                alert("Unable to retrieve your location. Please ensure location services are enabled.");
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        );
+    }
+</script>
+<style>
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .btn-detect-location {
+        background: transparent;
+        border: 1px solid var(--primary);
+        color: var(--primary);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    
+    .btn-detect-location:hover {
+        background: var(--primary);
+        color: white;
+    }
+    
+    .form-check {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-check input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--primary);
+    }
+    
+    .form-check label {
+        margin: 0;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        cursor: pointer;
+    }
+</style>
 {% endblock %}

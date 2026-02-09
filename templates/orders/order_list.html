@@ -94,22 +94,18 @@
                     <div class="preview-item">
                         <div class="preview-card">
                             
-                            <!-- Product Image -->
-                            <div class="preview-img-container">
-                                {% if item.product.image %}
-                                    <img src="{{ item.product.image.url }}" 
-                                         alt="{{ item.product.name }}" 
-                                         class="preview-img">
-                                {% elif item.product.images.first %}
-                                    <img src="{{ item.product.images.first.image.url }}" 
-                                         alt="{{ item.product.name }}" 
-                                         class="preview-img">
-                                {% else %}
-                                    <div class="preview-placeholder">
-                                        📦
-                                    </div>
-                                {% endif %}
-                            </div>
+                                <!-- Product Image -->
+                                <div class="preview-img-container">
+                                    {% if item.product and item.product.primary_image %}
+                                        <img src="{{ item.product.primary_image }}" 
+                                             alt="{{ item.product.name }}" 
+                                             class="preview-img">
+                                    {% else %}
+                                        <div class="preview-placeholder">
+                                            📦
+                                        </div>
+                                    {% endif %}
+                                </div>
                             
                             <!-- Product Info -->
                             <div class="preview-name">
